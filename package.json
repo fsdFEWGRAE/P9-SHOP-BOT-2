@@ -1,0 +1,21 @@
+{
+  "name": "discord-shop-bot",
+  "version": "1.0.0",
+  "description": "Discord Shop Bot with product management, orders, discounts, and reviews",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "shop",
+    "ecommerce"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.24.2",
+    "express": "^5.1.0"
+  }
+}
