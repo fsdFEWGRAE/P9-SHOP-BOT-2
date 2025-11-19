@@ -1,46 +1,18 @@
-{
-  "products": {
-    "0": {
-      "id": "0",
-      "name": "COD Cheat day",
-      "price": 4,
-      "keys": [
-        {
-          "value": "1",
-          "used": true
-        },
-        {
-          "value": "1",
-          "used": false
-        }
-      ]
+"products": {
+  "fortnite": {
+    "id": "fortnite",
+    "name": "Fortnite Aimbot",
+    "plans": {
+      "1d": {
+        "price": 5,
+        "keys": [
+          { "value": "KEY-1", "used": false }
+        ]
+      },
+      "3d": {
+        "price": 10,
+        "keys": []
+      }
     }
-  },
-  "orders": {
-    "1000": {
-      "invoiceNumber": 1000,
-      "userId": "1295707405958643715",
-      "productId": "0",
-      "paymentMethod": "bank",
-      "originalPrice": 4,
-      "finalPrice": 4,
-      "discount": null,
-      "status": "completed",
-      "timestamp": 1763405540857,
-      "keyDelivered": "1"
-    }
-  },
-  "invoiceCounter": 1001,
-  "userLanguages": {},
-  "discounts": {},
-  "discountRedemptions": {},
-  "reviews": [
-    {
-      "userId": "1295707405958643715",
-      "productId": "0",
-      "rating": 5,
-      "comment": "thx",
-      "timestamp": 1763405610000
-    }
-  ]
+  }
 }
