@@ -45,87 +45,72 @@ const TOKEN = process.env.DISCORD_TOKEN;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
 const PORT = process.env.PORT || 3000;
 
+// طرق الدفع (ثابتة)
+const PAYMENT_DETAILS = {
+  bank: "تحويل بنكي:\nSA1980204507849222121014",
+  stc: "STC Pay / Barq:\nOpen a ticket to get transfer number",
+  barq: "STC Pay / Barq:\nOpen a ticket to get transfer number",
+  paypal: "PayPal:\n17sutef2@gmail.com",
+  giftcard: "Gift Card:\nلازم من هذا الموقع فقط:\nhttps://skine.com/en-us/rewarble"
+};
+
 // =========== Translations ===========
 const translations = {
   en: {
-    notOwner: "You are not the owner.",
     productAdded: "Product added successfully!",
     planAdded: "Plan added successfully!",
     keyAdded: "Key added successfully!",
     productNotFound: "Product not found!",
     planNotFound: "Plan not found!",
     selectProduct: "Select a product:",
-    selectPlan: "Select subscription period:",
-    selectPayment: "Select payment method:",
+    selectPlan: "Select subscription duration:",
+    selectPayment: "Choose payment method:",
     noProducts: "No products available!",
     noPlans: "This product has no plans!",
-    noKeys: "No keys available for this plan!",
+    noKeys: "This plan has no keys left!",
     invoiceTitle: "Payment Invoice",
-    invoiceNote: "Please send payment proof (screenshot or transaction ID) in DM.",
-    invoiceSent: "Invoice sent to your DM.",
-    proofReceived: "Payment proof received. Waiting for approval.",
+    sendProof: "Please send payment proof here.",
+    invoiceSent: "Invoice has been sent to your DMs.",
     orderApproved: "Your order has been approved! Here is your key:",
-    orderRejected: "Your order has been rejected.",
-    reviewAsk: "Please rate your experience:",
+    orderRejected: "Your order was rejected.",
+    rateExperience: "Please rate your experience!",
     reviewReceived: "Thanks for your review!",
-    languageChangedAr: "Language changed to Arabic 🇸🇦",
-    languageChangedEn: "Language changed to English 🇬🇧",
-    bankTransfer: "Bank Transfer",
-    stcBarq: "STC Pay / Barq",
-    paypal: "PayPal",
-    giftcard: "Gift Card",
-    paymentInfoBank:
-      "Bank transfer IBAN:\n`SA1980204507849222121014`\n\nAfter transfer, send proof here.",
-    paymentInfoStcBarq:
-      "For STC Pay / Barq please open a ticket in the server to get the transfer number.",
-    paymentInfoPaypal:
-      "PayPal email:\n`17sutef2@gmail.com`\n\nSend payment then send proof here.",
-    paymentInfoGiftcard:
-      "Gift Card must be from this website only:\nhttps://skine.com/en-us/rewarble\nSend the code here after purchase.",
-    stockHeader: "Inventory status:",
-    stockNone: "No products currently."
+    languageChanged: "Language changed successfully!",
+    notOwner: "You are not the owner.",
+    stockHeader: "📦 Stock Status:",
+    noStockProducts: "No products found.",
+    chooseLanguage: "Choose your language:",
+    chooseShop: "Press the button to open the shop menu:"
   },
   ar: {
-    notOwner: "❌ أنت لست المالك.",
-    productAdded: "✅ تم إضافة المنتج بنجاح!",
-    planAdded: "✅ تم إضافة المدة بنجاح!",
-    keyAdded: "🔑 تم إضافة المفتاح بنجاح!",
-    productNotFound: "❌ المنتج غير موجود!",
-    planNotFound: "❌ المدة غير موجودة!",
+    productAdded: "تم إضافة المنتج بنجاح!",
+    planAdded: "تم إضافة المدة بنجاح!",
+    keyAdded: "تم إضافة المفتاح بنجاح!",
+    productNotFound: "المنتج غير موجود!",
+    planNotFound: "الخدمة / المدة غير موجودة!",
     selectProduct: "اختر منتج:",
     selectPlan: "اختر المدة:",
     selectPayment: "اختر وسيلة الدفع:",
-    noProducts: "❌ لا توجد منتجات متاحة!",
-    noPlans: "❌ هذا المنتج لا يحتوي على مدد!",
-    noKeys: "❌ لا توجد مفاتيح متاحة لهذه المدة!",
+    noProducts: "لا توجد منتجات متاحة!",
+    noPlans: "هذا المنتج لا يحتوي على فترات!",
+    noKeys: "هذه المدة لا تحتوي على مفاتيح متاحة!",
     invoiceTitle: "فاتورة الدفع",
-    invoiceNote: "يرجى إرسال إثبات الدفع (صورة أو رقم العملية) في الخاص.",
-    invoiceSent: "📨 تم إرسال الفاتورة إلى الخاص.",
-    proofReceived: "⌛ تم استلام الإثبات… في انتظار الموافقة.",
-    orderApproved: "✅ تمت الموافقة على طلبك! هذا مفتاحك:",
-    orderRejected: "❌ تم رفض طلبك.",
-    reviewAsk: "يرجى تقييم تجربتك:",
-    reviewReceived: "شكراً على تقييمك!",
-    languageChangedAr: "تم تغيير اللغة إلى العربية 🇸🇦",
-    languageChangedEn: "Language changed to English 🇬🇧",
-    bankTransfer: "تحويل بنكي",
-    stcBarq: "STC Pay / Barq",
-    paypal: "باي بال",
-    giftcard: "Gift Card",
-    paymentInfoBank:
-      "معلومات التحويل البنكي:\n`SA1980204507849222121014`\n\nبعد التحويل أرسل إثبات الدفع هنا.",
-    paymentInfoStcBarq:
-      "لـ STC Pay و Barq قم بفتح تذكرة في السيرفر للحصول على رقم التحويل.",
-    paymentInfoPaypal:
-      "إيميل PayPal:\n`17sutef2@gmail.com`\n\nقم بالدفع ثم أرسل الإثبات هنا.",
-    paymentInfoGiftcard:
-      "بطاقة الهدايا يجب أن تكون من هذا الموقع فقط:\nhttps://skine.com/en-us/rewarble\nأرسل الكود هنا بعد الشراء.",
-    stockHeader: "📦 حالة المخزون:",
-    stockNone: "❌ لا توجد منتجات حالياً."
+    sendProof: "أرسل إثبات الدفع هنا.",
+    invoiceSent: "تم إرسال الفاتورة إلى الخاص.",
+    orderApproved: "تمت الموافقة على طلبك! هذا مفتاحك:",
+    orderRejected: "تم رفض طلبك.",
+    rateExperience: "يرجى تقييم تجربتك!",
+    reviewReceived: "شكراً على التقييم!",
+    languageChanged: "تم تغيير اللغة!",
+    notOwner: "❌ أنت لست المالك.",
+    stockHeader: "📦 **حالة المخزون:**",
+    noStockProducts: "❌ لا توجد منتجات حالياً.",
+    chooseLanguage: "اختر لغتك / Choose your language:",
+    chooseShop: "اضغط لفتح قائمة المتجر:"
   }
 };
 
-// =========== Data Helpers ===========
+// =========== Load / Save Data ===========
 function loadData() {
   try {
     const raw = fs.readFileSync("data.json", "utf8");
@@ -138,8 +123,8 @@ function loadData() {
     return data;
   } catch (e) {
     return {
-      products: {}, // { id, name, plans:[{id,name,price,keys:[{value,used}]}] }
-      orders: {}, // invoice -> { invoice, userId, productId, planId, payment, status, timestamp, key? }
+      products: {}, // { productId: { id, name, plans:[{id,name,keys:[{value,used}]}] } }
+      orders: {},   // { invoice: {...} }
       reviews: [],
       userLanguages: {},
       invoiceCounter: 1000
@@ -151,6 +136,7 @@ function saveData(data) {
   fs.writeFileSync("data.json", JSON.stringify(data, null, 2));
 }
 
+// =========== Lang Helper ===========
 function getLang(userId) {
   const data = loadData();
   return data.userLanguages[userId] || "ar";
@@ -158,29 +144,10 @@ function getLang(userId) {
 
 function t(userId, key) {
   const lang = getLang(userId);
-  return translations[lang][key] || translations.en[key] || key;
+  return translations[lang][key] || translations["en"][key] || key;
 }
 
-function getPaymentInfo(method, userId) {
-  const lang = getLang(userId);
-  const tr = translations[lang];
-
-  switch (method) {
-    case "bank":
-      return tr.paymentInfoBank;
-    case "stc":
-    case "barq":
-      return tr.paymentInfoStcBarq;
-    case "paypal":
-      return tr.paymentInfoPaypal;
-    case "giftcard":
-      return tr.paymentInfoGiftcard;
-    default:
-      return "";
-  }
-}
-
-// =========== Discord Ready ===========
+// =========== Ready ===========
 client.once("ready", () => {
   console.log(`✅ Bot logged in as ${client.user.tag}`);
 });
@@ -192,10 +159,10 @@ client.once("ready", () => {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  // DM payment proof (non-command in DM)
+  // DM بدون بريفيكس = إثبات دفع
   if (!message.content.startsWith(PREFIX)) {
     if (message.channel.type === 1) {
-      return handleDMProof(message);
+      handleDMProof(message);
     }
     return;
   }
@@ -203,7 +170,7 @@ client.on("messageCreate", async (message) => {
   const args = message.content.slice(PREFIX.length).trim().split(/\s+/);
   const command = args.shift()?.toLowerCase();
 
-  // ---------- Language Message ----------
+  // ---------- زر اللغة ----------
   if (command === "sendlang") {
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -217,78 +184,42 @@ client.on("messageCreate", async (message) => {
     );
 
     return message.channel.send({
-      content: "اختر لغتك / Choose your language:",
+      content: translations["ar"].chooseLanguage,
       components: [row]
     });
   }
 
-  // ---------- Send Shop Button ----------
+  // ---------- زر المتجر ----------
   if (command === "sendshop") {
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("open_shop")
-        .setLabel("🛒 شراء / Buy")
+        .setLabel("🛒 فتح المتجر | Open Shop")
         .setStyle(ButtonStyle.Success)
     );
 
     return message.channel.send({
-      content: "اضغط لفتح قائمة المتجر / Click to open shop:",
+      content: translations["ar"].chooseShop,
       components: [row]
     });
   }
 
-  // ---------- Stock ----------
-  if (command === "stock") {
-    const data = loadData();
-    const products = Object.values(data.products);
-
-    if (!products.length) {
-      return message.reply(translations[getLang(message.author.id)].stockNone);
+  // باقي الأوامر تحتاج OWNER
+  if (["addproduct", "addplan", "addkey", "stock"].includes(command)) {
+    if (message.author.id !== OWNER_ID) {
+      return message.reply(t(message.author.id, "notOwner"));
     }
-
-    let msg = translations[getLang(message.author.id)].stockHeader + "\n\n";
-
-    products.forEach((prod) => {
-      msg += `**${prod.name}** (${prod.id})\n`;
-      if (!prod.plans || !prod.plans.length) {
-        msg += "  └ لا توجد مدد.\n\n";
-        return;
-      }
-      prod.plans.forEach((pl) => {
-        const stock = (pl.keys || []).filter((k) => !k.used).length;
-        let color = "🟩";
-        if (stock === 0) color = "🟥";
-        else if (stock < 5) color = "🟧";
-        msg += `  └ ${color} ${pl.name} — Keys: **${stock}**\n`;
-      });
-      msg += "\n";
-    });
-
-    return message.reply(msg);
   }
 
-  // ---------- Owner Only Below ----------
-  if (
-    ["addproduct", "addplan", "addkey"].includes(command) &&
-    message.author.id !== OWNER_ID
-  ) {
-    return message.reply(t(message.author.id, "notOwner"));
-  }
+  const data = loadData();
 
-  // ---------- Add Product ----------
+  // ---------- addproduct ----------
   if (command === "addproduct") {
-    const parts = message.content
-      .slice(PREFIX.length + "addproduct".length)
-      .split("|")
-      .map((p) => p.trim())
-      .filter(Boolean);
-
+    const parts = args.join(" ").split("|").map(p => p.trim());
     if (parts.length < 2) {
-      return message.reply("استخدام: -addproduct id | name");
+      return message.reply("استخدم: -addproduct productId | name");
     }
-
     const [id, name] = parts;
-    const data = loadData();
 
     if (!data.products[id]) {
       data.products[id] = {
@@ -304,41 +235,26 @@ client.on("messageCreate", async (message) => {
     return message.reply(t(message.author.id, "productAdded"));
   }
 
-  // ---------- Add Plan (time) ----------
-  // مثال: -addplan prod1 | 1d | Day (1 Day) | 10
+  // ---------- addplan ----------
   if (command === "addplan") {
-    const rest = message.content
-      .slice(PREFIX.length + "addplan".length)
-      .split("|")
-      .map((p) => p.trim())
-      .filter(Boolean);
-
-    if (rest.length < 4) {
-      return message.reply(
-        "استخدام: -addplan productId | planId | planName | price"
-      );
+    const parts = args.join(" ").split("|").map(p => p.trim());
+    if (parts.length < 3) {
+      return message.reply("استخدم: -addplan productId | planId | planName");
     }
 
-    const [productId, planId, planName, priceStr] = rest;
-    const price = parseFloat(priceStr);
-    if (isNaN(price)) {
-      return message.reply("السعر غير صالح.");
+    const [pid, planId, planName] = parts;
+    const product = data.products[pid];
+    if (!product) {
+      return message.reply(t(message.author.id, "productNotFound"));
     }
 
-    const data = loadData();
-    const product = data.products[productId];
-    if (!product) return message.reply(t(message.author.id, "productNotFound"));
-
-    if (!product.plans) product.plans = [];
-    const existing = product.plans.find((p) => p.id === planId);
+    const existing = product.plans.find(p => p.id === planId);
     if (existing) {
       existing.name = planName;
-      existing.price = price;
     } else {
       product.plans.push({
         id: planId,
         name: planName,
-        price,
         keys: []
       });
     }
@@ -347,64 +263,90 @@ client.on("messageCreate", async (message) => {
     return message.reply(t(message.author.id, "planAdded"));
   }
 
-  // ---------- Add Key ----------
-  // مثال: -addkey prod1 | 1d | KEY-XXXX
+  // ---------- addkey ----------
   if (command === "addkey") {
-    const rest = message.content
-      .slice(PREFIX.length + "addkey".length)
-      .split("|")
-      .map((p) => p.trim())
-      .filter(Boolean);
-
-    if (rest.length < 3) {
-      return message.reply("استخدام: -addkey productId | planId | keyValue");
+    const parts = args.join(" ").split("|").map(p => p.trim());
+    if (parts.length < 3) {
+      return message.reply("استخدم: -addkey productId | planId | KEY");
     }
 
-    const [productId, planId, keyValue] = rest;
-    const data = loadData();
-    const product = data.products[productId];
+    const [pid, planId, keyValue] = parts;
+
+    const product = data.products[pid];
     if (!product) return message.reply(t(message.author.id, "productNotFound"));
 
-    const plan = (product.plans || []).find((p) => p.id === planId);
+    const plan = product.plans.find(p => p.id === planId);
     if (!plan) return message.reply(t(message.author.id, "planNotFound"));
 
-    if (!plan.keys) plan.keys = [];
     plan.keys.push({ value: keyValue, used: false });
     saveData(data);
 
     return message.reply(t(message.author.id, "keyAdded"));
   }
+
+  // ---------- stock ----------
+  if (command === "stock") {
+    const products = Object.values(data.products);
+    if (!products.length) {
+      return message.reply(t(message.author.id, "noStockProducts"));
+    }
+
+    let msg = t(message.author.id, "stockHeader") + "\n\n";
+    products.forEach(prod => {
+      msg += `🔷 **${prod.name}** (${prod.id})\n`;
+      if (!prod.plans.length) {
+        msg += `   ↳ لا توجد فترات.\n\n`;
+      } else {
+        prod.plans.forEach(pl => {
+          const total = (pl.keys || []).filter(k => !k.used).length;
+          let icon = "🟩";
+          if (total < 5) icon = "🟧";
+          if (total === 0) icon = "🟥";
+          msg += `   ${icon} ${pl.name} [${pl.id}] — **${total}** مفتاح\n`;
+        });
+        msg += "\n";
+      }
+    });
+
+    return message.reply(msg);
+  }
+
+  // ---------- lang (تغيير اللغة) ----------
+  if (command === "lang") {
+    const lang = args[0]?.toLowerCase();
+    if (!["ar", "en"].includes(lang)) {
+      return message.reply("استخدم: -lang ar أو -lang en");
+    }
+    data.userLanguages[message.author.id] = lang;
+    saveData(data);
+    return message.reply(t(message.author.id, "languageChanged"));
+  }
 });
 
 // =============================================
-// ============ INTERACTIONS ===================
+// ============ INTERACTIONS (ALL) =============
 // =============================================
 
 client.on("interactionCreate", async (interaction) => {
   const data = loadData();
 
-  // ---------- Language Buttons ----------
+  // -------------- LANGUAGE BUTTONS --------------
   if (interaction.isButton()) {
     if (interaction.customId === "lang_ar") {
       data.userLanguages[interaction.user.id] = "ar";
       saveData(data);
-      return interaction.reply({
-        content: translations.ar.languageChangedAr,
-        ephemeral: true
-      });
+      return interaction.reply({ content: "تم تغيير اللغة 🇸🇦", ephemeral: true });
     }
+
     if (interaction.customId === "lang_en") {
       data.userLanguages[interaction.user.id] = "en";
       saveData(data);
-      return interaction.reply({
-        content: translations.en.languageChangedEn,
-        ephemeral: true
-      });
+      return interaction.reply({ content: "Language updated 🇬🇧", ephemeral: true });
     }
 
-    // ---------- Open Shop ----------
+    // ---------- فتح المتجر ----------
     if (interaction.customId === "open_shop") {
-      const products = Object.values(data.products || {});
+      const products = Object.values(data.products);
       if (!products.length) {
         return interaction.reply({
           content: t(interaction.user.id, "noProducts"),
@@ -412,7 +354,7 @@ client.on("interactionCreate", async (interaction) => {
         });
       }
 
-      const options = products.map((p) => ({
+      const options = products.map(p => ({
         label: p.name,
         value: p.id
       }));
@@ -431,46 +373,31 @@ client.on("interactionCreate", async (interaction) => {
       });
     }
 
-    // ---------- Approve / Reject ----------
+    // ---------- قبول / رفض طلب ----------
     if (interaction.customId.startsWith("approve|")) {
       if (interaction.user.id !== OWNER_ID) {
-        return interaction.reply({
-          content: t(interaction.user.id, "notOwner"),
-          ephemeral: true
-        });
+        return interaction.reply({ content: t(interaction.user.id, "notOwner"), ephemeral: true });
       }
 
       const invoice = interaction.customId.split("|")[1];
       const order = data.orders[invoice];
       if (!order) {
-        return interaction.reply({
-          content: "❌ الطلب غير موجود.",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "الطلب غير موجود.", ephemeral: true });
       }
 
       const product = data.products[order.productId];
       if (!product) {
-        return interaction.reply({
-          content: t(interaction.user.id, "productNotFound"),
-          ephemeral: true
-        });
+        return interaction.reply({ content: "المنتج غير موجود.", ephemeral: true });
       }
 
-      const plan = (product.plans || []).find((p) => p.id === order.planId);
+      const plan = product.plans.find(p => p.id === order.planId);
       if (!plan) {
-        return interaction.reply({
-          content: t(interaction.user.id, "planNotFound"),
-          ephemeral: true
-        });
+        return interaction.reply({ content: "الخدمة غير موجودة.", ephemeral: true });
       }
 
-      const keyObj = (plan.keys || []).find((k) => !k.used);
+      const keyObj = (plan.keys || []).find(k => !k.used);
       if (!keyObj) {
-        return interaction.reply({
-          content: t(interaction.user.id, "noKeys"),
-          ephemeral: true
-        });
+        return interaction.reply({ content: "لا يوجد مفاتيح متاحة!", ephemeral: true });
       }
 
       keyObj.used = true;
@@ -478,41 +405,35 @@ client.on("interactionCreate", async (interaction) => {
       order.key = keyObj.value;
       saveData(data);
 
-      const user = await client.users.fetch(order.userId);
-      await user.send(
+      const buyer = await client.users.fetch(order.userId);
+      await buyer.send(
         `${t(order.userId, "orderApproved")}\n\`\`\`${keyObj.value}\`\`\``
       );
 
-      await sendReviewRequest(user, order, product, plan);
+      await sendReviewRequest(buyer, order, product, plan);
 
       return interaction.update({
-        content: `✅ تم قبول الطلب #${invoice} وتم تسليم المفتاح.`,
+        content: `✅ تم قبول الطلب #${invoice} وتسليم المفتاح.`,
         components: []
       });
     }
 
     if (interaction.customId.startsWith("reject|")) {
       if (interaction.user.id !== OWNER_ID) {
-        return interaction.reply({
-          content: t(interaction.user.id, "notOwner"),
-          ephemeral: true
-        });
+        return interaction.reply({ content: t(interaction.user.id, "notOwner"), ephemeral: true });
       }
 
       const invoice = interaction.customId.split("|")[1];
       const order = data.orders[invoice];
       if (!order) {
-        return interaction.reply({
-          content: "❌ الطلب غير موجود.",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "الطلب غير موجود.", ephemeral: true });
       }
 
       order.status = "rejected";
       saveData(data);
 
-      const user = await client.users.fetch(order.userId);
-      await user.send(t(order.userId, "orderRejected"));
+      const buyer = await client.users.fetch(order.userId);
+      await buyer.send(t(order.userId, "orderRejected"));
 
       return interaction.update({
         content: `❌ تم رفض الطلب #${invoice}.`,
@@ -520,51 +441,50 @@ client.on("interactionCreate", async (interaction) => {
       });
     }
 
-    // ---------- Rate Buttons ----------
+    // ---------- زر التقييم ----------
     if (interaction.customId.startsWith("rate|")) {
-      const [_, rating, invoice] = interaction.customId.split("|");
+      const parts = interaction.customId.split("|"); // rate|rating|invoice
+      const rating = parts[1];
+      const invoice = parts[2];
 
       const modal = new ModalBuilder()
         .setCustomId(`review_modal|${rating}|${invoice}`)
-        .setTitle("إضافة تقييم / Add Review");
+        .setTitle("إضافة تقييم");
 
       const comment = new TextInputBuilder()
         .setCustomId("comment")
-        .setLabel("اكتب تعليقاً (اختياري) / Comment (optional)")
+        .setLabel("اكتب تعليقاً (اختياري)")
         .setStyle(TextInputStyle.Paragraph)
         .setRequired(false);
 
-      modal.addComponents(new ActionRowBuilder().addComponents(comment));
+      modal.addComponents(
+        new ActionRowBuilder().addComponents(comment)
+      );
 
       return interaction.showModal(modal);
     }
+
+    return; // end button handler
   }
 
-  // ---------- Select Menus ----------
+  // -------------- SELECT MENUS --------------
   if (interaction.isStringSelectMenu()) {
-    // Select product
+    // --- اختيار المنتج ---
     if (interaction.customId === "select_product") {
-      const productId = interaction.values[0];
-      const product = data.products[productId];
-
+      const pid = interaction.values[0];
+      const product = data.products[pid];
       if (!product) {
-        return interaction.reply({
-          content: t(interaction.user.id, "productNotFound"),
-          ephemeral: true
-        });
+        return interaction.reply({ content: t(interaction.user.id, "productNotFound"), ephemeral: true });
       }
 
       const plans = product.plans || [];
       if (!plans.length) {
-        return interaction.reply({
-          content: t(interaction.user.id, "noPlans"),
-          ephemeral: true
-        });
+        return interaction.reply({ content: t(interaction.user.id, "noPlans"), ephemeral: true });
       }
 
-      const options = plans.map((pl) => ({
-        label: `${pl.name} - ${pl.price}`,
-        value: `${productId}|${pl.id}`
+      const options = plans.map(pl => ({
+        label: pl.name,
+        value: `${pid}|${pl.id}`
       }));
 
       const row = new ActionRowBuilder().addComponents(
@@ -581,40 +501,32 @@ client.on("interactionCreate", async (interaction) => {
       });
     }
 
-    // Select plan
+    // --- اختيار المدة ---
     if (interaction.customId === "select_plan") {
-      const [productId, planId] = interaction.values[0].split("|");
-      const product = data.products[productId];
-      const plan = (product?.plans || []).find((p) => p.id === planId);
+      const [pid, planId] = interaction.values[0].split("|");
+      const product = data.products[pid];
+      if (!product) {
+        return interaction.reply({ content: t(interaction.user.id, "productNotFound"), ephemeral: true });
+      }
+      const plan = product.plans.find(p => p.id === planId);
+      if (!plan) {
+        return interaction.reply({ content: t(interaction.user.id, "planNotFound"), ephemeral: true });
+      }
 
-      if (!product || !plan) {
-        return interaction.reply({
-          content: t(interaction.user.id, "planNotFound"),
-          ephemeral: true
-        });
+      const available = (plan.keys || []).filter(k => !k.used).length;
+      if (!available) {
+        return interaction.reply({ content: t(interaction.user.id, "noKeys"), ephemeral: true });
       }
 
       const paymentRow = new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
-          .setCustomId(`select_payment|${productId}|${planId}`)
+          .setCustomId(`select_payment|${pid}|${planId}`)
           .setPlaceholder(t(interaction.user.id, "selectPayment"))
           .addOptions([
-            {
-              label: translations[getLang(interaction.user.id)].bankTransfer,
-              value: "bank"
-            },
-            {
-              label: translations[getLang(interaction.user.id)].stcBarq,
-              value: "stc"
-            },
-            {
-              label: translations[getLang(interaction.user.id)].paypal,
-              value: "paypal"
-            },
-            {
-              label: translations[getLang(interaction.user.id)].giftcard,
-              value: "giftcard"
-            }
+            { label: "Bank Transfer", value: "bank" },
+            { label: "STC Pay / Barq", value: "stc" },
+            { label: "PayPal", value: "paypal" },
+            { label: "Gift Card", value: "giftcard" }
           ])
       );
 
@@ -625,115 +537,76 @@ client.on("interactionCreate", async (interaction) => {
       });
     }
 
-    // Select payment
-    if (interaction.customId.startsWith("select_payment|")) {
-      const [_, productId, planId] = interaction.customId.split("|");
-      const payment = interaction.values[0];
+    // --- اختيار طريقة الدفع ---
+    if (interaction.customId.startsWith("select_payment")) {
+      const [_, pid, planId] = interaction.customId.split("|");
+      const paymentMethod = interaction.values[0];
 
-      const product = data.products[productId];
-      if (!product) {
-        return interaction.reply({
-          content: t(interaction.user.id, "productNotFound"),
-          ephemeral: true
-        });
-      }
-
-      const plan = (product.plans || []).find((p) => p.id === planId);
-      if (!plan) {
-        return interaction.reply({
-          content: t(interaction.user.id, "planNotFound"),
-          ephemeral: true
-        });
-      }
-
-      // Check stock
-      const keyAvailable = (plan.keys || []).some((k) => !k.used);
-      if (!keyAvailable) {
-        return interaction.reply({
-          content: t(interaction.user.id, "noKeys"),
-          ephemeral: true
-        });
+      const product = data.products[pid];
+      const plan = product.plans.find(p => p.id === planId);
+      if (!product || !plan) {
+        return interaction.reply({ content: "خطأ في البيانات.", ephemeral: true });
       }
 
       const invoice = data.invoiceCounter++;
       data.orders[invoice] = {
         invoice,
         userId: interaction.user.id,
-        productId,
+        productId: pid,
         planId,
-        payment,
+        payment: paymentMethod,
         status: "pending",
         timestamp: Date.now()
       };
       saveData(data);
 
-      const lang = getLang(interaction.user.id);
-      const tr = translations[lang];
-
-      const paymentInfo = getPaymentInfo(payment, interaction.user.id);
+      // نص طريقة الدفع
+      const payText = PAYMENT_DETAILS[paymentMethod] || "";
 
       const embed = new EmbedBuilder()
-        .setTitle(`${tr.invoiceTitle} #${invoice}`)
-        .setColor(0x00bfff)
+        .setTitle(`${t(interaction.user.id, "invoiceTitle")} #${invoice}`)
+        .setColor("#00bfff")
         .addFields(
-          { name: "Product / المنتج", value: product.name, inline: true },
-          { name: "Plan / المدة", value: plan.name, inline: true },
-          { name: "Price / السعر", value: `${plan.price}`, inline: true },
-          {
-            name: tr.selectPayment,
-            value:
-              payment === "bank"
-                ? tr.bankTransfer
-                : payment === "stc"
-                ? tr.stcBarq
-                : payment === "paypal"
-                ? tr.paypal
-                : tr.giftcard
-          }
+          { name: "المنتج / Product", value: product.name, inline: false },
+          { name: "المدة / Plan", value: plan.name, inline: false },
+          { name: "طريقة الدفع / Payment", value: paymentMethod.toUpperCase(), inline: false },
+          { name: "تفاصيل الدفع / Payment Details", value: payText || "N/A", inline: false }
         )
-        .addFields({ name: "طريقة الدفع / Payment Info", value: paymentInfo })
-        .setFooter({ text: tr.invoiceNote })
+        .setFooter({ text: t(interaction.user.id, "sendProof") })
         .setTimestamp();
 
-      try {
-        await interaction.user.send({ embeds: [embed] });
-      } catch (e) {
-        console.error("Failed to DM user invoice:", e);
-        return interaction.reply({
-          content:
-            "❌ لا يمكن إرسال الخاص. قم بفتح الخاص مع البوت / Enable DMs.",
-          ephemeral: true
-        });
-      }
+      // DM للعميل
+      await interaction.user.send({ embeds: [embed] });
 
       return interaction.reply({
-        content: tr.invoiceSent,
+        content: t(interaction.user.id, "invoiceSent"),
         ephemeral: true
       });
     }
+
+    return; // end select menus
   }
 
-  // ---------- Review modal ----------
+  // -------------- REVIEW MODAL SUBMIT --------------
   if (interaction.isModalSubmit()) {
     if (interaction.customId.startsWith("review_modal")) {
-      const [_, rating, invoice] = interaction.customId.split("|");
+      const parts = interaction.customId.split("|"); // review_modal|rating|invoice
+      const rating = Number(parts[1]);
+      const invoice = parts[2];
+
       const data2 = loadData();
       const order = data2.orders[invoice];
       if (!order) {
-        return interaction.reply({
-          content: "❌ الطلب غير موجود.",
-          ephemeral: true
-        });
+        return interaction.reply({ content: "الطلب غير موجود.", ephemeral: true });
       }
 
-      const comment =
-        interaction.fields.getTextInputValue("comment") || "No comment";
+      const comment = interaction.fields.getTextInputValue("comment") || "No comment";
 
       const review = {
         userId: order.userId,
         productId: order.productId,
         planId: order.planId,
-        rating: Number(rating),
+        rating,
         comment,
         timestamp: Date.now()
       };
@@ -741,38 +614,25 @@ client.on("interactionCreate", async (interaction) => {
       data2.reviews.push(review);
       saveData(data2);
 
-      await interaction.reply({
-        content: t(order.userId, "reviewReceived"),
-        ephemeral: true
-      });
+      await interaction.reply({ content: t(order.userId, "reviewReceived"), ephemeral: true });
 
-      try {
-        const channel = await client.channels.fetch(REVIEW_CHANNEL_ID);
-        const product = data2.products[order.productId];
-        const plan = product?.plans?.find((p) => p.id === order.planId);
-        const stars = "⭐".repeat(Number(rating));
+      const channel = await client.channels.fetch(REVIEW_CHANNEL_ID);
+      const product = data2.products[order.productId];
+      const plan = product.plans.find(p => p.id === order.planId);
+      const stars = "⭐".repeat(rating);
 
-        const embed = new EmbedBuilder()
-          .setTitle(`${stars} (${rating}/5)`)
-          .setColor(0xffaa00)
-          .addFields(
-            { name: "العميل / Customer", value: `<@${order.userId}>` },
-            {
-              name: "المنتج / Product",
-              value: product ? product.name : order.productId
-            },
-            {
-              name: "المدة / Plan",
-              value: plan ? plan.name : order.planId
-            },
-            { name: "التعليق / Comment", value: comment }
-          )
-          .setTimestamp();
+      const embed = new EmbedBuilder()
+        .setTitle(`${stars} (${rating}/5)`)
+        .setColor("#ffaa00")
+        .addFields(
+          { name: "العميل", value: `<@${order.userId}>` },
+          { name: "المنتج", value: product.name },
+          { name: "الخدمة", value: plan.name },
+          { name: "التعليق", value: comment }
+        )
+        .setTimestamp();
 
-        await channel.send({ embeds: [embed] });
-      } catch (e) {
-        console.error("Failed to send review to channel:", e);
-      }
+      await channel.send({ embeds: [embed] });
     }
   }
 });
@@ -783,42 +643,28 @@ client.on("interactionCreate", async (interaction) => {
 
 async function handleDMProof(message) {
   const data = loadData();
-
   const pending = Object.values(data.orders).filter(
-    (o) => o.userId === message.author.id && o.status === "pending"
+    o => o.userId === message.author.id && o.status === "pending"
   );
 
   if (!pending.length) return;
 
   const order = pending[pending.length - 1];
   const product = data.products[order.productId];
-  const plan = product?.plans?.find((p) => p.id === order.planId);
+  const plan = product.plans.find(p => p.id === order.planId);
 
   const owner = await client.users.fetch(OWNER_ID);
 
   const embed = new EmbedBuilder()
-    .setTitle("طلب جديد في انتظار الموافقة / New Order Pending")
-    .setColor(0xffaa00)
+    .setTitle("طلب جديد في انتظار الموافقة")
+    .setColor("#ffaa00")
     .addFields(
-      { name: "Invoice / الفاتورة", value: `#${order.invoice}`, inline: true },
-      {
-        name: "Customer / العميل",
-        value: `<@${order.userId}>`,
-        inline: true
-      },
-      {
-        name: "Product / المنتج",
-        value: product ? product.name : order.productId,
-        inline: true
-      },
-      {
-        name: "Plan / المدة",
-        value: plan ? plan.name : order.planId,
-        inline: true
-      },
-      { name: "Payment", value: order.payment, inline: true }
+      { name: "الفاتورة", value: `#${order.invoice}`, inline: true },
+      { name: "العميل", value: `<@${order.userId}>`, inline: true },
+      { name: "الخدمة", value: `${product.name} - ${plan.name}`, inline: false },
+      { name: "طريقة الدفع", value: order.payment.toUpperCase(), inline: false }
     )
-    .setDescription(`**Proof / الإثبات:**\n${message.content || "صورة مرفقة"}`)
+    .setDescription(`**الإثبات:**\n${message.content || "صورة مرفقة"}`)
     .setTimestamp();
 
   if (message.attachments.size > 0) {
@@ -828,70 +674,51 @@ async function handleDMProof(message) {
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`approve|${order.invoice}`)
-      .setLabel("✅ قبول / Approve")
+      .setLabel("قبول")
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId(`reject|${order.invoice}`)
-      .setLabel("❌ رفض / Reject")
+      .setLabel("رفض")
       .setStyle(ButtonStyle.Danger)
   );
 
   await owner.send({ embeds: [embed], components: [row] });
-  await message.reply(t(message.author.id, "proofReceived"));
+  await message.reply("⌛ تم استلام الإثبات… بانتظار المراجعة");
 }
 
 // =============================================
-// ============ SEND REVIEW REQUEST ============
+// ============ REVIEW REQUEST DM ==============
 // =============================================
 
 async function sendReviewRequest(user, order, product, plan) {
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`rate|1|${order.invoice}`)
-      .setLabel("⭐ 1")
-      .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-      .setCustomId(`rate|2|${order.invoice}`)
-      .setLabel("⭐⭐ 2")
-      .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-      .setCustomId(`rate|3|${order.invoice}`)
-      .setLabel("⭐⭐⭐ 3")
-      .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-      .setCustomId(`rate|4|${order.invoice}`)
-      .setLabel("⭐⭐⭐⭐ 4")
-      .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-      .setCustomId(`rate|5|${order.invoice}`)
-      .setLabel("⭐⭐⭐⭐⭐ 5")
-      .setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId(`rate|1|${order.invoice}`).setLabel("⭐ 1").setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(`rate|2|${order.invoice}`).setLabel("⭐⭐ 2").setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(`rate|3|${order.invoice}`).setLabel("⭐⭐⭐ 3").setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(`rate|4|${order.invoice}`).setLabel("⭐⭐⭐⭐ 4").setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(`rate|5|${order.invoice}`).setLabel("⭐⭐⭐⭐⭐ 5").setStyle(ButtonStyle.Primary)
   );
 
   await user.send({
-    content: t(user.id, "reviewAsk"),
+    content: t(user.id, "rateExperience"),
     components: [row]
   });
 }
 
 // =============================================
-// ============== DASHBOARD BACKEND ============
+// ============== DASHBOARD API ================
 // =============================================
 
+// جلسات الأدمن
 const adminSessions = {};
 
 function createToken() {
   return crypto.randomBytes(24).toString("hex");
 }
 
-// Health
-app.get("/api/health", (req, res) => {
-  res.json({ ok: true });
-});
-
-// Login
+// Login للداشبورد
 app.post("/api/admin/login", (req, res) => {
-  const pw = (req.body && req.body.password) || "";
+  const pw = req.body && req.body.password;
   if (!pw || pw !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: "invalid_password" });
   }
@@ -901,7 +728,7 @@ app.post("/api/admin/login", (req, res) => {
 });
 
 function adminAuth(req, res, next) {
-  const header = req.headers["authorization"] || "";
+  const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
   if (!token || !adminSessions[token]) {
     return res.status(401).json({ error: "unauthorized" });
@@ -909,91 +736,110 @@ function adminAuth(req, res, next) {
   next();
 }
 
+// Health
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true });
+});
+
 // Stats
 app.get("/api/stats", (req, res) => {
   const data = loadData();
-  const products = Object.values(data.products || {});
-  let totalPlans = 0;
-  let totalKeys = 0;
-  products.forEach((p) => {
-    (p.plans || []).forEach((pl) => {
-      totalPlans++;
-      totalKeys += (pl.keys || []).filter((k) => !k.used).length;
-    });
-  });
-  const totalProducts = products.length;
-  const totalOrders = Object.keys(data.orders || {}).length;
-  const totalReviews = (data.reviews || []).length;
-  res.json({ totalProducts, totalPlans, totalKeys, totalOrders, totalReviews });
+  const totalProducts = Object.keys(data.products).length;
+  const totalPlans = Object.values(data.products).reduce(
+    (acc, p) => acc + (p.plans ? p.plans.length : 0),
+    0
+  );
+  const totalOrders = Object.keys(data.orders).length;
+  const totalReviews = data.reviews.length;
+
+  res.json({ totalProducts, totalPlans, totalOrders, totalReviews });
 });
 
-// Products (with plans)
+// Products CRUD
 app.get("/api/products", adminAuth, (req, res) => {
   const data = loadData();
-  const products = Object.values(data.products || {}).map((p) => ({
-    id: p.id,
-    name: p.name,
-    plans: (p.plans || []).map((pl) => ({
-      id: pl.id,
-      name: pl.name,
-      price: pl.price,
-      stock: (pl.keys || []).filter((k) => !k.used).length
-    }))
-  }));
-  res.json(products);
+  res.json(data.products);
 });
 
-// Orders
+app.post("/api/products", adminAuth, (req, res) => {
+  const { id, name } = req.body || {};
+  if (!id || !name) {
+    return res.status(400).json({ error: "missing_fields" });
+  }
+  const data = loadData();
+  if (!data.products[id]) {
+    data.products[id] = { id, name, plans: [] };
+  } else {
+    data.products[id].name = name;
+  }
+  saveData(data);
+  res.json({ ok: true });
+});
+
+app.post("/api/products/:pid/plans", adminAuth, (req, res) => {
+  const pid = req.params.pid;
+  const { planId, name } = req.body || {};
+  if (!planId || !name) {
+    return res.status(400).json({ error: "missing_fields" });
+  }
+
+  const data = loadData();
+  const product = data.products[pid];
+  if (!product) return res.status(404).json({ error: "product_not_found" });
+
+  product.plans = product.plans || [];
+  const existing = product.plans.find(p => p.id === planId);
+  if (existing) {
+    existing.name = name;
+  } else {
+    product.plans.push({
+      id: planId,
+      name,
+      keys: []
+    });
+  }
+
+  saveData(data);
+  res.json({ ok: true });
+});
+
+app.post("/api/products/:pid/plans/:planId/keys", adminAuth, (req, res) => {
+  const pid = req.params.pid;
+  const planId = req.params.planId;
+  const { keys } = req.body || {};
+  if (!Array.isArray(keys) || !keys.length) {
+    return res.status(400).json({ error: "keys_required" });
+  }
+
+  const data = loadData();
+  const product = data.products[pid];
+  if (!product) return res.status(404).json({ error: "product_not_found" });
+
+  const plan = (product.plans || []).find(p => p.id === planId);
+  if (!plan) return res.status(404).json({ error: "plan_not_found" });
+
+  plan.keys = plan.keys || [];
+  keys.forEach(k => {
+    plan.keys.push({ value: k, used: false });
+  });
+
+  saveData(data);
+  res.json({ ok: true, added: keys.length });
+});
+
+// Orders / Reviews read
 app.get("/api/orders", adminAuth, (req, res) => {
   const data = loadData();
-  const arr = Object.values(data.orders || {}).sort(
-    (a, b) => b.timestamp - a.timestamp
-  );
-  const productsMap = data.products || {};
-  const orders = arr.map((o) => {
-    const prod = productsMap[o.productId];
-    const plan = prod?.plans?.find((p) => p.id === o.planId);
-    return {
-      invoice: o.invoice,
-      userId: o.userId,
-      productId: o.productId,
-      productName: prod ? prod.name : o.productId,
-      planId: o.planId,
-      planName: plan ? plan.name : o.planId,
-      payment: o.payment,
-      status: o.status,
-      timestamp: o.timestamp
-    };
-  });
-  res.json(orders);
+  res.json(data.orders);
 });
 
-// Reviews
 app.get("/api/reviews", adminAuth, (req, res) => {
   const data = loadData();
-  const reviews = (data.reviews || [])
-    .slice()
-    .sort((a, b) => b.timestamp - a.timestamp);
-  const products = data.products || {};
-  const arr = reviews.map((r) => {
-    const prod = products[r.productId];
-    const plan = prod?.plans?.find((p) => p.id === r.planId);
-    return {
-      userId: r.userId,
-      productId: r.productId,
-      productName: prod ? prod.name : r.productId,
-      planId: r.planId,
-      planName: plan ? plan.name : r.planId,
-      rating: r.rating,
-      comment: r.comment,
-      timestamp: r.timestamp
-    };
-  });
-  res.json(arr);
+  res.json(data.reviews);
 });
 
 // =============================================
-// ============== DASHBOARD FRONTEND ===========
+// ============== DASHBOARD PAGE ===============
 // =============================================
 
 app.get("/", (req, res) => {
@@ -1006,21 +852,21 @@ app.get("/", (req, res) => {
 <style>
   * { box-sizing:border-box; margin:0; padding:0; }
   body { font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#020617; color:#e5e7eb; }
-  .app { min-height:100vh; padding:16px; background:radial-gradient(circle at top,#0f172a 0,#020617 55%); }
-  .card { background:rgba(15,23,42,0.96); border-radius:18px; padding:18px 20px; box-shadow:0 18px 40px rgba(15,23,42,0.9); border:1px solid rgba(148,163,184,0.18); }
-  .login-wrap { max-width:420px; margin:40px auto; }
+  .app { min-height:100vh; padding:16px; background:#020617; }
+  .card { background:#020617; border-radius:14px; padding:16px 20px; box-shadow:0 18px 40px rgba(15,23,42,0.9); border:1px solid rgba(148,163,184,0.15); }
+  .login-wrap { max-width:520px; margin:40px auto; }
   h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  h2 { font-size:18px; font-weight:700; margin-bottom:6px; }
   p { font-size:13px; color:#9ca3af; }
-  input, button { font-family:inherit; }
-  input[type=password] {
-    width:100%; margin-top:10px; padding:9px 11px; border-radius:999px; border:1px solid #4b5563;
+  input, button, textarea { font-family:inherit; }
+  input[type=password], input[type=text], input[type=number], textarea {
+    width:100%; margin-top:6px; padding:8px 10px; border-radius:8px; border:1px solid #4b5563;
     background:#020617; color:#e5e7eb; outline:none; font-size:13px;
   }
-  input[type=password]:focus { border-color:#0ea5e9; }
-  .btn { display:inline-flex; align-items:center; justify-content:center; padding:8px 14px; border-radius:999px; border:none; cursor:pointer; font-size:13px; font-weight:500; transition:transform .08s ease, box-shadow .12s ease, background .12s ease; }
-  .btn:active { transform:scale(.97); box-shadow:none; }
-  .btn-primary { background:linear-gradient(135deg,#06b6d4,#4f46e5); color:#0b1120; box-shadow:0 10px 30px rgba(59,130,246,0.4); }
-  .btn-primary:hover { background:linear-gradient(135deg,#0ea5e9,#6366f1); }
+  input:focus, textarea:focus { border-color:#0ea5e9; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; padding:8px 14px; border-radius:999px; border:none; cursor:pointer; font-size:13px; font-weight:500; }
+  .btn-primary { background:#06b6d4; color:#0f172a; }
+  .btn-primary:hover { background:#0ea5e9; }
   .btn-ghost { background:transparent; border:1px solid #4b5563; color:#e5e7eb; }
   .btn-ghost:hover { border-color:#9ca3af; }
   .btn-danger { background:#ef4444; color:#0b0f19; }
@@ -1028,51 +874,40 @@ app.get("/", (req, res) => {
   .mt8 { margin-top:8px; }
   .mt12 { margin-top:12px; }
   .mt16 { margin-top:16px; }
+  .mt24 { margin-top:24px; }
   .text-sm { font-size:13px; }
   .status-ok { color:#22c55e; }
   .status-bad { color:#ef4444; }
   .hidden { display:none !important; }
 
-  .layout { display:flex; gap:18px; margin-top:22px; }
-  .sidebar { width:230px; background:rgba(15,23,42,0.98); border-radius:18px; padding:14px 12px; box-shadow:0 18px 40px rgba(15,23,42,0.9); border:1px solid rgba(148,163,184,0.25); }
-  .sidebar-title { font-size:18px; font-weight:700; margin-bottom:10px; }
-  .nav-btn { width:100%; display:flex; align-items:center; gap:8px; padding:8px 10px; margin-bottom:6px; border-radius:12px; border:none; background:transparent; color:#e5e7eb; font-size:13px; cursor:pointer; text-align:left; }
+  .layout { display:flex; gap:18px; margin-top:24px; }
+  .sidebar { width:230px; background:#020617; border-radius:14px; padding:14px 12px; box-shadow:0 18px 40px rgba(15,23,42,0.9); border:1px solid rgba(148,163,184,0.2); }
+  .sidebar-title { font-size:18px; font-weight:700; margin-bottom:12px; }
+  .nav-btn { width:100%; display:flex; align-items:center; gap:8px; padding:8px 10px; margin-bottom:6px; border-radius:10px; border:none; background:transparent; color:#e5e7eb; font-size:13px; cursor:pointer; text-align:left; }
   .nav-btn span.icon { font-size:16px; }
-  .nav-btn.active { background:linear-gradient(135deg,rgba(56,189,248,0.16),rgba(129,140,248,0.16)); box-shadow:0 0 0 1px rgba(56,189,248,0.7); }
+  .nav-btn.active { background:rgba(15,23,42,0.95); box-shadow:0 0 0 1px rgba(56,189,248,0.7); }
   .nav-footer { margin-top:14px; border-top:1px solid #1f2937; padding-top:10px; font-size:11px; color:#9ca3af; }
 
   .main { flex:1; min-width:0; }
   .main-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-  .main-header h2 { font-size:20px; font-weight:700; }
-  .main-header-right { display:flex; align-items:center; gap:8px; font-size:12px; color:#9ca3af; }
-
+  .main-header-right { font-size:12px; color:#9ca3af; }
   .views { }
   .view { display:none; }
   .view.active { display:block; }
 
-  .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-top:10px; }
-  .stat-card { position:relative; overflow:hidden; }
-  .stat-card h3 { font-size:12px; color:#9ca3af; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.08em; }
+  .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-top:10px; }
+  .stat-card h3 { font-size:13px; color:#9ca3af; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.08em; }
   .stat-card .value { font-size:26px; font-weight:700; margin-top:2px; }
-  .stat-card::after {
-    content:""; position:absolute; inset:auto -40px -40px auto; width:80px; height:80px;
-    background:radial-gradient(circle,#38bdf8 0,transparent 55%); opacity:.18;
-  }
 
   table { width:100%; border-collapse:collapse; font-size:13px; margin-top:10px; }
-  th, td { padding:7px 9px; border-bottom:1px solid #111827; }
-  th { background:#020617; color:#9ca3af; font-weight:500; text-align:left; position:sticky; top:0; z-index:1; }
-  tr:hover td { background:#030712; }
+  th, td { padding:8px 10px; border-bottom:1px solid #111827; }
+  th { background:#020617; color:#9ca3af; font-weight:500; text-align:left; }
+  tr:hover td { background:#020617; }
 
-  .tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; font-size:11px; }
-  .tag-pending { background:#f97316; color:#111827; }
-  .tag-completed { background:#22c55e; color:#052e16; }
-  .tag-rejected { background:#ef4444; color:#450a0a; }
+  .field { margin-bottom:8px; font-size:13px; }
+  .field label { display:block; margin-bottom:4px; color:#9ca3af; }
 
-  .card-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin-top:10px; }
-  .pill { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; font-size:11px; background:#111827; color:#e5e7eb; }
-
-  .small { font-size:11px; color:#9ca3af; }
+  .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-top:8px; }
 
   @media (max-width:900px) {
     .layout { flex-direction:column; }
@@ -1085,9 +920,12 @@ app.get("/", (req, res) => {
 <div class="app">
   <div id="loginView" class="login-wrap card">
     <h1>P9 Shop Admin</h1>
-    <p>Login with <code>ADMIN_PASSWORD</code> from Render / Replit secrets.</p>
+    <p>Login using <code>ADMIN_PASSWORD</code> (env variable).</p>
     <div class="mt12">
-      <input type="password" id="pwInput" placeholder="Admin password" />
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="pwInput" placeholder="Admin password" />
+      </div>
     </div>
     <div class="mt12">
       <button class="btn btn-primary" onclick="login()">Login</button>
@@ -1098,8 +936,8 @@ app.get("/", (req, res) => {
   </div>
 
   <div id="adminLayout" class="layout hidden">
-    <aside class="sidebar card">
-      <div class="sidebar-title">Dashboard</div>
+    <aside class="sidebar">
+      <div class="sidebar-title">Admin</div>
       <button class="nav-btn active" data-view="stats" onclick="setView('stats')"><span class="icon">📊</span><span>Stats</span></button>
       <button class="nav-btn" data-view="products" onclick="setView('products')"><span class="icon">📦</span><span>Products</span></button>
       <button class="nav-btn" data-view="orders" onclick="setView('orders')"><span class="icon">🧾</span><span>Orders</span></button>
@@ -1117,24 +955,18 @@ app.get("/", (req, res) => {
       <div class="card">
         <div class="main-header">
           <h2 id="viewTitle">Stats</h2>
-          <div class="main-header-right">
-            <span id="lastUpdated">–</span>
-          </div>
+          <div class="main-header-right" id="lastUpdated">–</div>
         </div>
         <div class="views">
           <section id="view-stats" class="view active">
             <div class="stat-grid">
               <div class="card stat-card">
-                <h3>Products</h3>
+                <h3>Total Products</h3>
                 <div class="value" id="statProducts">-</div>
               </div>
               <div class="card stat-card">
-                <h3>Plans</h3>
+                <h3>Total Plans</h3>
                 <div class="value" id="statPlans">-</div>
-              </div>
-              <div class="card stat-card">
-                <h3>Available Keys</h3>
-                <div class="value" id="statKeys">-</div>
               </div>
               <div class="card stat-card">
                 <h3>Orders</h3>
@@ -1148,28 +980,87 @@ app.get("/", (req, res) => {
           </section>
 
           <section id="view-products" class="view">
-            <h3 class="text-sm" style="color:#9ca3af;">Products &amp; Plans</h3>
-            <table id="productsTable">
-              <thead>
-                <tr><th>Product</th><th>Plan</th><th>Price</th><th>Stock</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
+            <h2>Products & Plans</h2>
+            <div class="form-grid mt8">
+              <div class="card">
+                <h3>Add / Update Product</h3>
+                <div class="field mt8">
+                  <label>Product ID</label>
+                  <input id="p_id" />
+                </div>
+                <div class="field">
+                  <label>Name</label>
+                  <input id="p_name" />
+                </div>
+                <button class="btn btn-primary mt8" onclick="addProduct()">Save Product</button>
+              </div>
+              <div class="card">
+                <h3>Add / Update Plan</h3>
+                <div class="field mt8">
+                  <label>Product ID</label>
+                  <input id="pl_pid" />
+                </div>
+                <div class="field">
+                  <label>Plan ID (e.g. 1d, 3d, week)</label>
+                  <input id="pl_id" />
+                </div>
+                <div class="field">
+                  <label>Plan Name</label>
+                  <input id="pl_name" />
+                </div>
+                <button class="btn btn-primary mt8" onclick="addPlan()">Save Plan</button>
+              </div>
+              <div class="card">
+                <h3>Add Keys</h3>
+                <div class="field mt8">
+                  <label>Product ID</label>
+                  <input id="k_pid" />
+                </div>
+                <div class="field">
+                  <label>Plan ID</label>
+                  <input id="k_planId" />
+                </div>
+                <div class="field">
+                  <label>Keys (one per line)</label>
+                  <textarea id="k_values" placeholder="KEY-1&#10;KEY-2&#10;KEY-3"></textarea>
+                </div>
+                <button class="btn btn-primary mt8" onclick="addKeys()">Add Keys</button>
+              </div>
+            </div>
+
+            <div class="card mt16">
+              <h3>Current Products</h3>
+              <table id="productsTable">
+                <thead>
+                  <tr><th>Product ID</th><th>Name</th><th>Plan ID</th><th>Plan Name</th><th>Total Keys</th><th>Unused Keys</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </section>
 
           <section id="view-orders" class="view">
-            <h3 class="text-sm" style="color:#9ca3af;">Recent Orders</h3>
-            <table id="ordersTable">
-              <thead>
-                <tr><th>Invoice</th><th>User</th><th>Product</th><th>Plan</th><th>Payment</th><th>Status</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
+            <h2>Orders</h2>
+            <div class="card mt8">
+              <table id="ordersTable">
+                <thead>
+                  <tr><th>Invoice</th><th>User ID</th><th>Product</th><th>Plan</th><th>Payment</th><th>Status</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </section>
 
           <section id="view-reviews" class="view">
-            <h3 class="text-sm" style="color:#9ca3af;">Latest Reviews</h3>
-            <div id="reviewsContainer" class="card-grid mt8"></div>
+            <h2>Reviews</h2>
+            <div class="card mt8">
+              <table id="reviewsTable">
+                <thead>
+                  <tr><th>User</th><th>Product</th><th>Plan</th><th>Rating</th><th>Comment</th><th>Time</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </section>
         </div>
       </div>
@@ -1186,16 +1077,16 @@ document.addEventListener('DOMContentLoaded', function () {
   apiInfo.textContent = 'Backend API: ' + window.location.origin;
 });
 
+function setLoginStatus(msg, ok) {
+  var el = document.getElementById('loginStatus');
+  el.innerHTML = 'Status: <span class="' + (ok ? 'status-ok' : 'status-bad') + '">' + msg + '</span>';
+}
+
 function checkHealth() {
   fetch('/api/health')
     .then(r => r.ok ? r.json() : Promise.reject())
     .then(() => setLoginStatus('Backend OK', true))
     .catch(() => setLoginStatus('Backend not responding', false));
-}
-
-function setLoginStatus(msg, ok) {
-  var el = document.getElementById('loginStatus');
-  el.innerHTML = 'Status: <span class="' + (ok ? 'status-ok' : 'status-bad') + '">' + msg + '</span>';
 }
 
 async function login() {
@@ -1249,18 +1140,17 @@ function setView(view) {
   var btn = document.querySelector('.nav-btn[data-view="' + view + '"]');
   if (btn) btn.classList.add('active');
 
-  updateTimestamp();
+  var d = new Date();
+  document.getElementById('lastUpdated').textContent = 'Last refresh: ' + d.toLocaleString();
+
   if (view === 'stats') loadStats();
   if (view === 'products') loadProducts();
   if (view === 'orders') loadOrders();
   if (view === 'reviews') loadReviews();
 }
 
-function refreshCurrent() { setView(currentView); }
-
-function updateTimestamp() {
-  var d = new Date();
-  document.getElementById('lastUpdated').textContent = 'Last refresh: ' + d.toLocaleString();
+function refreshCurrent() {
+  setView(currentView);
 }
 
 async function authedFetch(url, options) {
@@ -1271,13 +1161,13 @@ async function authedFetch(url, options) {
   return fetch(url, options);
 }
 
+// ========== Stats ==========
 async function loadStats() {
   try {
     const res = await fetch('/api/stats');
     const s = await res.json();
     document.getElementById('statProducts').textContent = s.totalProducts;
     document.getElementById('statPlans').textContent = s.totalPlans;
-    document.getElementById('statKeys').textContent = s.totalKeys;
     document.getElementById('statOrders').textContent = s.totalOrders;
     document.getElementById('statReviews').textContent = s.totalReviews;
   } catch (e) {
@@ -1285,25 +1175,37 @@ async function loadStats() {
   }
 }
 
+// ========== Products / Plans / Keys ==========
 async function loadProducts() {
+  if (!token) return;
   try {
     const res = await authedFetch('/api/products');
     const products = await res.json();
     const tbody = document.querySelector('#productsTable tbody');
     tbody.innerHTML = '';
-    products.forEach(p => {
+    Object.values(products).forEach(p => {
       if (!p.plans || !p.plans.length) {
         var tr = document.createElement('tr');
-        tr.innerHTML = '<td>' + p.name + ' (' + p.id + ')</td><td>-</td><td>-</td><td>-</td>';
+        tr.innerHTML =
+          '<td>' + p.id + '</td>' +
+          '<td>' + p.name + '</td>' +
+          '<td>-</td>' +
+          '<td>-</td>' +
+          '<td>0</td>' +
+          '<td>0</td>';
         tbody.appendChild(tr);
       } else {
         p.plans.forEach(pl => {
+          var total = (pl.keys || []).length;
+          var unused = (pl.keys || []).filter(k => !k.used).length;
           var tr = document.createElement('tr');
           tr.innerHTML =
-            '<td>' + p.name + ' (' + p.id + ')</td>' +
-            '<td>' + pl.name + ' (' + pl.id + ')</td>' +
-            '<td>' + pl.price + '</td>' +
-            '<td>' + pl.stock + '</td>';
+            '<td>' + p.id + '</td>' +
+            '<td>' + p.name + '</td>' +
+            '<td>' + pl.id + '</td>' +
+            '<td>' + pl.name + '</td>' +
+            '<td>' + total + '</td>' +
+            '<td>' + unused + '</td>';
           tbody.appendChild(tr);
         });
       }
@@ -1313,25 +1215,109 @@ async function loadProducts() {
   }
 }
 
+async function addProduct() {
+  if (!token) return alert('Login first');
+  var id = document.getElementById('p_id').value.trim();
+  var name = document.getElementById('p_name').value.trim();
+  if (!id || !name) {
+    alert('Fill product id and name');
+    return;
+  }
+  try {
+    const res = await authedFetch('/api/products', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ id:id, name:name })
+    });
+    if (!res.ok) {
+      alert('Error saving product');
+      return;
+    }
+    document.getElementById('p_id').value = '';
+    document.getElementById('p_name').value = '';
+    loadProducts();
+    loadStats();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function addPlan() {
+  if (!token) return alert('Login first');
+  var pid = document.getElementById('pl_pid').value.trim();
+  var pidPlan = document.getElementById('pl_id').value.trim();
+  var name = document.getElementById('pl_name').value.trim();
+  if (!pid || !pidPlan || !name) {
+    alert('Fill product id, plan id and name');
+    return;
+  }
+  try {
+    const res = await authedFetch('/api/products/' + encodeURIComponent(pid) + '/plans', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ planId: pidPlan, name:name })
+    });
+    if (!res.ok) {
+      alert('Error saving plan');
+      return;
+    }
+    document.getElementById('pl_pid').value = '';
+    document.getElementById('pl_id').value = '';
+    document.getElementById('pl_name').value = '';
+    loadProducts();
+    loadStats();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function addKeys() {
+  if (!token) return alert('Login first');
+  var pid = document.getElementById('k_pid').value.trim();
+  var planId = document.getElementById('k_planId').value.trim();
+  var raw = document.getElementById('k_values').value;
+  if (!pid || !planId || !raw.trim()) {
+    alert('Fill product id, plan id and keys');
+    return;
+  }
+  var keys = raw.split('\\n').map(function (x) { return x.trim(); }).filter(Boolean);
+  try {
+    const res = await authedFetch('/api/products/' + encodeURIComponent(pid) + '/plans/' + encodeURIComponent(planId) + '/keys', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ keys: keys })
+    });
+    if (!res.ok) {
+      alert('Error adding keys');
+      return;
+    }
+    document.getElementById('k_pid').value = '';
+    document.getElementById('k_planId').value = '';
+    document.getElementById('k_values').value = '';
+    loadProducts();
+    loadStats();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ========== Orders ==========
 async function loadOrders() {
+  if (!token) return;
   try {
     const res = await authedFetch('/api/orders');
     const orders = await res.json();
     const tbody = document.querySelector('#ordersTable tbody');
     tbody.innerHTML = '';
-    orders.forEach(o => {
+    Object.values(orders).forEach(o => {
       var tr = document.createElement('tr');
-      var statusClass =
-        o.status === 'completed' ? 'tag tag-completed' :
-        o.status === 'rejected' ? 'tag tag-rejected' :
-        'tag tag-pending';
       tr.innerHTML =
         '<td>#' + o.invoice + '</td>' +
         '<td>' + o.userId + '</td>' +
-        '<td>' + o.productName + '</td>' +
-        '<td>' + o.planName + '</td>' +
+        '<td>' + o.productId + '</td>' +
+        '<td>' + o.planId + '</td>' +
         '<td>' + o.payment + '</td>' +
-        '<td><span class="' + statusClass + '">' + o.status + '</span></td>';
+        '<td>' + o.status + '</td>';
       tbody.appendChild(tr);
     });
   } catch (e) {
@@ -1339,29 +1325,24 @@ async function loadOrders() {
   }
 }
 
+// ========== Reviews ==========
 async function loadReviews() {
+  if (!token) return;
   try {
     const res = await authedFetch('/api/reviews');
     const reviews = await res.json();
-    const container = document.getElementById('reviewsContainer');
-    container.innerHTML = '';
-    if (!reviews.length) {
-      container.innerHTML = '<div class="small">No reviews yet.</div>';
-      return;
-    }
+    const tbody = document.querySelector('#reviewsTable tbody');
+    tbody.innerHTML = '';
     reviews.forEach(r => {
-      var card = document.createElement('div');
-      card.className = 'card';
-      var stars = '';
-      for (var i = 0; i < r.rating; i++) stars += '⭐';
-      card.innerHTML =
-        '<div>' + stars + ' (' + r.rating + '/5)</div>' +
-        '<div class="small mt8">User: ' + r.userId + '</div>' +
-        '<div class="small">Product: ' + r.productName + '</div>' +
-        '<div class="small">Plan: ' + r.planName + '</div>' +
-        '<div class="mt8 text-sm">' + (r.comment || 'No comment') + '</div>' +
-        '<div class="small mt8">' + new Date(r.timestamp).toLocaleString() + '</div>';
-      container.appendChild(card);
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + r.userId + '</td>' +
+        '<td>' + r.productId + '</td>' +
+        '<td>' + r.planId + '</td>' +
+        '<td>' + r.rating + '</td>' +
+        '<td>' + (r.comment || '') + '</td>' +
+        '<td>' + new Date(r.timestamp).toLocaleString() + '</td>';
+      tbody.appendChild(tr);
     });
   } catch (e) {
     console.error(e);
