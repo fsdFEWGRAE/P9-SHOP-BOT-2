@@ -4,34 +4,35 @@
 
 // =========== Imports ===========
 const {
-    Client,
-    GatewayIntentBits,
-    EmbedBuilder,
-    ActionRowBuilder,
-    StringSelectMenuBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    ModalBuilder,
-    TextInputBuilder,
-    TextInputStyle,
-    Partials
+  Client,
+  GatewayIntentBits,
+  EmbedBuilder,
+  ActionRowBuilder,
+  StringSelectMenuBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  Partials,
+  ChannelType
 } = require("discord.js");
 
 const fs = require("fs");
 const express = require("express");
-const crypto = require("crypto");
 
 // =========== Discord Client ===========
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.DirectMessages
-    ],
-    partials: [Partials.Channel]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.DirectMessages
+  ],
+  partials: [Partials.Channel]
 });
 
+// =========== Express App ===========
 const app = express();
 app.use(express.json());
 
@@ -41,648 +42,909 @@ const REVIEW_CHANNEL_ID = "1438169825489719326";
 
 const OWNER_ID = process.env.OWNER_ID;
 const TOKEN = process.env.DISCORD_TOKEN;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
 const PORT = process.env.PORT || 3000;
+
+// معلومات الدفع (عدلها من env في Render)
+const PAYMENT_INFO = {
+  paypal: process.env.PAYPAL_INFO || "PayPal: your-email@example.com",
+  stc: process.env.STC_PAY_INFO || "STC Pay: 05XXXXXXXX",
+  barq: process.env.BARQ_INFO || "Barq: your-username",
+  bank: process.env.BANK_INFO || "Bank IBAN: SA00 0000 0000 0000",
+  ticket:
+    process.env.TICKET_INFO ||
+    "افتح تذكرة في روم الشراء لتمام عملية الدفع / Open a ticket in the purchase channel."
+};
 
 // =========== Translations ===========
 const translations = {
-    en: {
-        productAdded: "Product added successfully!",
-        keyAdded: "Key added successfully!",
-        productNotFound: "Product not found!",
-        selectProduct: "Select a product:",
-        selectPlan: "Select subscription duration:",
-        selectPayment: "Choose payment method:",
-        noProducts: "No products available!",
-        noStock: "This product has no keys left!",
-        invoiceTitle: "Payment Invoice",
-        sendProof: "Please send payment proof here.",
-        orderApproved: "Your order has been approved! Here is your key:",
-        orderRejected: "Your order was rejected.",
-        rateExperience: "Please rate your experience!",
-        reviewReceived: "Thanks for your review!",
-        languageChanged: "Language changed successfully!"
-    },
-    ar: {
-        productAdded: "تم إضافة المنتج بنجاح!",
-        keyAdded: "تم إضافة المفتاح بنجاح!",
-        productNotFound: "المنتج غير موجود!",
-        selectProduct: "اختر منتج:",
-        selectPlan: "اختر المدة:",
-        selectPayment: "اختر وسيلة الدفع:",
-        noProducts: "لا توجد منتجات!",
-        noStock: "هذا المنتج لا يحتوي على مفاتيح!",
-        invoiceTitle: "فاتورة الدفع",
-        sendProof: "أرسل إثبات الدفع هنا.",
-        orderApproved: "تمت الموافقة على طلبك! هذا مفتاحك:",
-        orderRejected: "تم رفض طلبك.",
-        rateExperience: "يرجى تقييم تجربتك!",
-        reviewReceived: "شكراً على التقييم!",
-        languageChanged: "تم تغيير اللغة!"
-    }
+  en: {
+    chooseLanguage: "Choose your language:",
+    langArabicButton: "Arabic 🇸🇦",
+    langEnglishButton: "English 🇬🇧",
+    languageUpdatedAr: "Language changed to Arabic 🇸🇦",
+    languageUpdatedEn: "Language changed to English 🇬🇧",
+
+    shopButtonText: "🛒 Open Shop",
+    shopOpened: "Select a product to start your order:",
+    noProducts: "No products are available right now.",
+    noPlans: "This product has no durations configured.",
+    selectProduct: "Select a product:",
+    selectPlan: "Select duration:",
+    selectPayment: "Select your payment method:",
+    paymentOptionsTitle: "Payment Method",
+    invoiceSent: "Invoice sent to your DM.",
+    invoiceTitle: "Payment Invoice",
+    sendProof: "Please send your payment proof here (message or image).",
+
+    paymentPaypal: "PayPal",
+    paymentSTC: "STC Pay",
+    paymentBarq: "Barq",
+    paymentBank: "Bank Transfer",
+    paymentTicket: "Open Ticket",
+
+    ownerNewOrderTitle: "New Order Pending",
+    proofReceived: "Payment proof received. Waiting for approval…",
+
+    notOwner: "You are not authorized to use this command.",
+    productAdded: "Product added successfully.",
+    planAdded: "Plan added successfully.",
+    keyAdded: "Key added successfully.",
+    productNotFound: "Product not found.",
+    planNotFound: "Plan not found.",
+
+    stockHeader: "Stock status:",
+    stockNoProducts: "No products at the moment.",
+    stockLineProduct: "Product",
+    stockLinePlan: "Plan",
+    stockKeys: "Keys",
+
+    orderApproved: "Your order has been approved! Here is your key:",
+    orderRejected: "Your order has been rejected.",
+    rateExperience: "Please rate your experience:",
+    reviewReceived: "Thanks for your review!"
+  },
+  ar: {
+    chooseLanguage: "اختر لغتك:",
+    langArabicButton: "العربية 🇸🇦",
+    langEnglishButton: "English 🇬🇧",
+    languageUpdatedAr: "تم تغيير اللغة إلى العربية 🇸🇦",
+    languageUpdatedEn: "Language changed to English 🇬🇧",
+
+    shopButtonText: "🛒 فتح المتجر",
+    shopOpened: "اختر منتجاً لبدء الطلب:",
+    noProducts: "لا توجد منتجات حالياً.",
+    noPlans: "هذا المنتج لا يحتوي على فترات/خطط.",
+    selectProduct: "اختر المنتج:",
+    selectPlan: "اختر المدة:",
+    selectPayment: "اختر وسيلة الدفع:",
+    paymentOptionsTitle: "طريقة الدفع",
+    invoiceSent: "تم إرسال الفاتورة إلى الخاص.",
+    invoiceTitle: "فاتورة الدفع",
+    sendProof: "أرسل هنا إثبات الدفع (رسالة أو صورة).",
+
+    paymentPaypal: "باي بال",
+    paymentSTC: "STC Pay",
+    paymentBarq: "بارق",
+    paymentBank: "تحويل بنكي",
+    paymentTicket: "فتح تذكرة شراء",
+
+    ownerNewOrderTitle: "طلب جديد في انتظار الموافقة",
+    proofReceived: "تم استلام إثبات الدفع، في انتظار الموافقة…",
+
+    notOwner: "لا تملك صلاحية استخدام هذا الأمر.",
+    productAdded: "تم إضافة المنتج بنجاح.",
+    planAdded: "تمت إضافة الفترة/الخطة بنجاح.",
+    keyAdded: "تم إضافة المفتاح.",
+    productNotFound: "المنتج غير موجود.",
+    planNotFound: "الفترة/الخطة غير موجودة.",
+
+    stockHeader: "حالة المخزون:",
+    stockNoProducts: "لا توجد منتجات حالياً.",
+    stockLineProduct: "المنتج",
+    stockLinePlan: "المدة",
+    stockKeys: "عدد المفاتيح",
+
+    orderApproved: "تمت الموافقة على طلبك! هذا مفتاحك:",
+    orderRejected: "تم رفض طلبك.",
+    rateExperience: "يرجى تقييم تجربتك:",
+    reviewReceived: "شكراً على تقييمك!"
+  }
 };
 
-// =========== Load Data ===========
+// =========== Data Helpers ===========
 function loadData() {
-    try {
-        let raw = fs.readFileSync("data.json", "utf8");
-        return JSON.parse(raw);
-    } catch (e) {
-        return {
-            products: {},        // المنتج الأساسي
-            plans: {},           // الفترات لكل منتج
-            orders: {},
-            reviews: [],
-            userLanguages: {},
-            discounts: {},
-            discountRedemptions: {},
-            invoiceCounter: 1000
-        };
-    }
+  try {
+    const raw = fs.readFileSync("data.json", "utf8");
+    const data = JSON.parse(raw);
+
+    data.products = data.products || {};
+    data.orders = data.orders || {};
+    data.reviews = data.reviews || [];
+    data.userLanguages = data.userLanguages || {};
+    data.invoiceCounter = data.invoiceCounter || 1000;
+
+    return data;
+  } catch (e) {
+    return {
+      products: {}, // productId => { id, name, plans: [ { id, name, price, keys:[{value, used}] } ] }
+      orders: {}, // invoice => order
+      reviews: [],
+      userLanguages: {},
+      invoiceCounter: 1000
+    };
+  }
 }
 
-// =========== Save Data ===========
 function saveData(data) {
-    fs.writeFileSync("data.json", JSON.stringify(data, null, 2));
+  fs.writeFileSync("data.json", JSON.stringify(data, null, 2));
 }
 
-// =========== Lang Helper ===========
 function getLang(userId) {
-    const data = loadData();
-    return data.userLanguages[userId] || "ar";
+  const data = loadData();
+  return data.userLanguages[userId] || "ar";
 }
 
 function t(userId, key) {
-    const lang = getLang(userId);
-    return translations[lang][key] || translations["en"][key] || key;
+  const lang = getLang(userId);
+  return (
+    (translations[lang] && translations[lang][key]) ||
+    (translations.en && translations.en[key]) ||
+    key
+  );
 }
 
-// =========== Console Ready ===========
+// =========== Ready ===========
 client.once("ready", () => {
-    console.log(`✅ Bot logged in as ${client.user.tag}`);
+  console.log(`✅ Logged in as ${client.user.tag}`);
 });
+
 // =============================================
-// ============ BOT MESSAGE COMMANDS ===========
+// ============ MESSAGE COMMANDS ===============
 // =============================================
 
 client.on("messageCreate", async (message) => {
-    if (message.author.bot) return;
+  if (message.author.bot) return;
 
-    // -------------- Language Button (Public) --------------
-    if (message.content === "-sendlang") {
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId("lang_ar")
-                    .setLabel("العربية 🇸🇦")
-                    .setStyle(ButtonStyle.Primary),
-                new ButtonBuilder()
-                    .setCustomId("lang_en")
-                    .setLabel("English 🇬🇧")
-                    .setStyle(ButtonStyle.Secondary)
-            );
+  // DM → Payment proof
+  if (message.channel.type === ChannelType.DM) {
+    return handleDMProof(message);
+  }
 
-        return message.channel.send({
-            content: "اختر لغتك / Choose your language:",
-            components: [row]
-        });
+  // لغة / شوب (بدون prefix) لو حاب
+  // ...
+
+  if (!message.content.startsWith(PREFIX)) return;
+
+  const args = message.content.slice(PREFIX.length).trim().split(/\s+/);
+  const command = args.shift()?.toLowerCase();
+
+  // ---------- Send Language Panel ----------
+  if (command === "sendlang") {
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("lang_ar")
+        .setLabel(translations.ar.langArabicButton)
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId("lang_en")
+        .setLabel(translations.en.langEnglishButton)
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    return message.channel.send({
+      content: `${translations.ar.chooseLanguage}\n${translations.en.chooseLanguage}`,
+      components: [row]
+    });
+  }
+
+  // ---------- Send Shop Button ----------
+  if (command === "sendshop" || command === "sendshopbutton") {
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("open_shop")
+        .setLabel("🛒 المتجر | Shop")
+        .setStyle(ButtonStyle.Success)
+    );
+
+    return message.channel.send({
+      content: "اضغط لفتح المتجر / Click to open shop:",
+      components: [row]
+    });
+  }
+
+  // ========== Admin Only Commands ==========
+  if (command === "addproduct") {
+    if (message.author.id !== OWNER_ID)
+      return message.reply(t(message.author.id, "notOwner"));
+
+    const parts = args.join(" ").split("|").map((p) => p.trim());
+    // -addproduct id | name
+    if (parts.length < 2) {
+      return message.reply("Usage: -addproduct productId | product name");
     }
 
-    // -------------- Send Shop Button --------------
-    if (message.content === "-sendshop") {
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId("open_shop")
-                    .setLabel("🛒 فتح المتجر | Open Shop")
-                    .setStyle(ButtonStyle.Success)
-            );
+    const [id, name] = parts;
+    const data = loadData();
 
-        return message.channel.send({
-            content: "اضغط لفتح قائمة المتجر:",
-            components: [row]
-        });
+    if (!data.products[id]) {
+      data.products[id] = {
+        id,
+        name,
+        plans: []
+      };
+    } else {
+      data.products[id].name = name;
     }
 
-    // -------------- PREFIX COMMANDS --------------
-    if (!message.content.startsWith(PREFIX)) return;
+    saveData(data);
+    return message.reply(t(message.author.id, "productAdded"));
+  }
 
-    const args = message.content.slice(PREFIX.length).trim().split(/\s+/);
-    const command = args.shift()?.toLowerCase();
+  if (command === "addplan") {
+    if (message.author.id !== OWNER_ID)
+      return message.reply(t(message.author.id, "notOwner"));
 
-    // --- ADD PRODUCT ---
-    if (command === "addproduct") {
-        if (message.author.id !== OWNER_ID)
-            return message.reply("❌ أنت لست المالك");
-
-        const parts = args.join(" ").split("|").map(p => p.trim());
-        if (parts.length < 2)
-            return message.reply("❌ استخدم: -addproduct id | name");
-
-        const [id, name] = parts;
-        const data = loadData();
-
-        if (!data.products[id]) {
-            data.products[id] = {
-                id,
-                name,
-                plans: [] // الفترات مثل: 1day, 3days, week
-            };
-        }
-
-        saveData(data);
-        return message.reply("✅ تم إضافة المنتج!");
+    const parts = args.join(" ").split("|").map((p) => p.trim());
+    // -addplan productId | planId | planName | price
+    if (parts.length < 4) {
+      return message.reply(
+        "Usage: -addplan productId | planId | plan name | price"
+      );
     }
 
-    // --- ADD PLAN ---
-    if (command === "addplan") {
-        if (message.author.id !== OWNER_ID)
-            return message.reply("❌ أنت لست المالك");
+    const [productId, planId, planName, priceStr] = parts;
+    const price = parseFloat(priceStr);
+    const data = loadData();
 
-        const parts = args.join(" ").split("|").map(p => p.trim());
-        if (parts.length < 3)
-            return message.reply("❌ استخدم: -addplan productId | planId | name");
+    const product = data.products[productId];
+    if (!product) return message.reply(t(message.author.id, "productNotFound"));
 
-        const [pid, planId, planName] = parts;
-        const data = loadData();
+    if (!Array.isArray(product.plans)) product.plans = [];
 
-        if (!data.products[pid])
-            return message.reply("❌ المنتج غير موجود");
-
-        data.products[pid].plans.push({
-            id: planId,
-            name: planName,
-            keys: []
-        });
-
-        saveData(data);
-        return message.reply("✅ تمت إضافة الفترة!");
+    const existing = product.plans.find((p) => p.id === planId);
+    if (existing) {
+      existing.name = planName;
+      existing.price = price;
+    } else {
+      product.plans.push({
+        id: planId,
+        name: planName,
+        price: price,
+        keys: []
+      });
     }
 
-    // --- ADD KEY TO PLAN ---
-    if (command === "addkey") {
-        if (message.author.id !== OWNER_ID)
-            return message.reply("❌ غير مصرح");
+    saveData(data);
+    return message.reply(t(message.author.id, "planAdded"));
+  }
 
-        const parts = args.join(" ").split("|").map(p => p.trim());
-        if (parts.length < 3)
-            return message.reply("❌ استخدم: -addkey productId | planId | keyValue");
+  if (command === "addkey") {
+    if (message.author.id !== OWNER_ID)
+      return message.reply(t(message.author.id, "notOwner"));
 
-        const [pid, planId, keyValue] = parts;
-        const data = loadData();
-
-        const product = data.products[pid];
-        if (!product) return message.reply("❌ المنتج غير موجود");
-
-        const plan = product.plans.find(p => p.id === planId);
-        if (!plan) return message.reply("❌ الفترة غير موجودة");
-
-        plan.keys.push({ value: keyValue, used: false });
-        saveData(data);
-
-        return message.reply("🔑 تم إضافة المفتاح!");
+    const parts = args.join(" ").split("|").map((p) => p.trim());
+    // -addkey productId | planId | keyValue
+    if (parts.length < 3) {
+      return message.reply(
+        "Usage: -addkey productId | planId | KEY-VALUE-HERE"
+      );
     }
+
+    const [productId, planId, keyValue] = parts;
+    const data = loadData();
+
+    const product = data.products[productId];
+    if (!product) return message.reply(t(message.author.id, "productNotFound"));
+
+    const plan = (product.plans || []).find((p) => p.id === planId);
+    if (!plan) return message.reply(t(message.author.id, "planNotFound"));
+
+    if (!Array.isArray(plan.keys)) plan.keys = [];
+    plan.keys.push({ value: keyValue, used: false });
+
+    saveData(data);
+    return message.reply(t(message.author.id, "keyAdded"));
+  }
+
+  if (command === "stock") {
+    const data = loadData();
+    const products = Object.values(data.products);
+
+    if (!products.length) {
+      return message.reply(t(message.author.id, "stockNoProducts"));
+    }
+
+    let msg = `📦 **${t(message.author.id, "stockHeader")}**\n\n`;
+
+    products.forEach((prod) => {
+      msg += `🧾 **${t(
+        message.author.id,
+        "stockLineProduct"
+      )}:** ${prod.name} (${prod.id})\n`;
+
+      (prod.plans || []).forEach((plan) => {
+        const stock = (plan.keys || []).filter((k) => !k.used).length;
+        let color = "🟩"; // ممتاز
+        if (stock === 0) color = "🟥";
+        else if (stock < 5) color = "🟧";
+
+        msg += `  ${color} **${
+          t(message.author.id, "stockLinePlan") + ":"
+        } ${plan.name}** — ${t(
+          message.author.id,
+          "stockKeys"
+        )}: **${stock}**\n`;
+      });
+
+      msg += "\n";
+    });
+
+    return message.reply(msg);
+  }
+
+  if (command === "lang") {
+    const lang = args[0]?.toLowerCase();
+    if (!["ar", "en"].includes(lang)) {
+      return message.reply("Usage: -lang ar / en");
+    }
+    const data = loadData();
+    data.userLanguages[message.author.id] = lang;
+    saveData(data);
+    if (lang === "ar") {
+      return message.reply(translations.ar.languageUpdatedAr);
+    } else {
+      return message.reply(translations.en.languageUpdatedEn);
+    }
+  }
 });
 
-
 // =============================================
-// ========= INTERACTIONS (BUTTONS / MENUS) =====
+// ========= INTERACTIONS (BUTTONS/MENUS) ======
 // =============================================
 
 client.on("interactionCreate", async (interaction) => {
-    const data = loadData();
+  const data = loadData();
 
-    // -------------- LANGUAGE SELECTION --------------
-    if (interaction.isButton()) {
-        if (interaction.customId === "lang_ar") {
-            data.userLanguages[interaction.user.id] = "ar";
-            saveData(data);
-            return interaction.reply({ content: "تم تغيير اللغة 🇸🇦", ephemeral: true });
-        }
-        if (interaction.customId === "lang_en") {
-            data.userLanguages[interaction.user.id] = "en";
-            saveData(data);
-            return interaction.reply({ content: "Language updated 🇬🇧", ephemeral: true });
-        }
+  // ---------- Language Buttons ----------
+  if (interaction.isButton()) {
+    if (interaction.customId === "lang_ar") {
+      data.userLanguages[interaction.user.id] = "ar";
+      saveData(data);
+      return interaction.reply({
+        content: translations.ar.languageUpdatedAr,
+        ephemeral: true
+      });
+    }
+    if (interaction.customId === "lang_en") {
+      data.userLanguages[interaction.user.id] = "en";
+      saveData(data);
+      return interaction.reply({
+        content: translations.en.languageUpdatedEn,
+        ephemeral: true
+      });
     }
 
-    // -------------- OPEN SHOP --------------
+    // ---------- Open Shop Button ----------
     if (interaction.customId === "open_shop") {
-        const products = Object.values(data.products);
-
-        if (products.length === 0)
-            return interaction.reply({ content: t(interaction.user.id, "noProducts"), ephemeral: true });
-
-        const options = products.map(p => ({
-            label: p.name,
-            value: p.id
-        }));
-
-        const row = new ActionRowBuilder().addComponents(
-            new StringSelectMenuBuilder()
-                .setCustomId("select_product")
-                .setPlaceholder(t(interaction.user.id, "selectProduct"))
-                .addOptions(options)
-        );
-
+      const products = Object.values(data.products);
+      if (!products.length) {
         return interaction.reply({
-            content: t(interaction.user.id, "selectProduct"),
-            components: [row],
-            ephemeral: true
+          content: t(interaction.user.id, "noProducts"),
+          ephemeral: true
         });
+      }
+
+      const options = products.map((p) => ({
+        label: p.name,
+        value: p.id
+      }));
+
+      const row = new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId("select_product")
+          .setPlaceholder(t(interaction.user.id, "selectProduct"))
+          .addOptions(options)
+      );
+
+      return interaction.reply({
+        content: t(interaction.user.id, "shopOpened"),
+        components: [row],
+        ephemeral: true
+      });
     }
 
-    // -------------- SELECT PRODUCT --------------
-    if (interaction.isStringSelectMenu()) {
-        if (interaction.customId === "select_product") {
-            const pid = interaction.values[0];
-            const product = data.products[pid];
+    // ---------- Approve / Reject (Owner) ----------
+    if (interaction.customId.startsWith("approve|")) {
+      if (interaction.user.id !== OWNER_ID) {
+        return interaction.reply({ content: "❌ Not allowed.", ephemeral: true });
+      }
 
-            const plans = product.plans;
-            if (!plans.length)
-                return interaction.reply({ content: "❌ المنتج لا يحتوي على فترات!", ephemeral: true });
+      const invoice = interaction.customId.split("|")[1];
+      const order = data.orders[invoice];
+      if (!order) {
+        return interaction.reply({
+          content: "❌ Order not found.",
+          ephemeral: true
+        });
+      }
 
-            const options = plans.map(pl => ({
-                label: pl.name,
-                value: `${pid}|${pl.id}`
-            }));
+      const product = data.products[order.productId];
+      if (!product) {
+        return interaction.reply({
+          content: "❌ Product missing.",
+          ephemeral: true
+        });
+      }
+      const plan = (product.plans || []).find((p) => p.id === order.planId);
+      if (!plan) {
+        return interaction.reply({
+          content: "❌ Plan missing.",
+          ephemeral: true
+        });
+      }
 
-            const row = new ActionRowBuilder().addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId("select_plan")
-                    .setPlaceholder(t(interaction.user.id, "selectPlan"))
-                    .addOptions(options)
-            );
+      const keyObj = (plan.keys || []).find((k) => !k.used);
+      if (!keyObj) {
+        return interaction.reply({
+          content: "❌ No keys available for this plan.",
+          ephemeral: true
+        });
+      }
 
-            return interaction.reply({
-                content: t(interaction.user.id, "selectPlan"),
-                components: [row],
-                ephemeral: true
-            });
-        }
+      keyObj.used = true;
+      order.status = "completed";
+      order.key = keyObj.value;
+      saveData(data);
 
-        // -------------- SELECT PLAN --------------
-        if (interaction.customId === "select_plan") {
-            const [pid, planId] = interaction.values[0].split("|");
-            const product = data.products[pid];
-            const plan = product.plans.find(p => p.id === planId);
+      const user = await client.users.fetch(order.userId);
+      await user.send(
+        `${t(order.userId, "orderApproved")}\n\`\`\`${keyObj.value}\`\`\``
+      );
 
-            // اختيار طريقة الدفع
-            const row = new ActionRowBuilder().addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId(`select_payment|${pid}|${planId}`)
-                    .setPlaceholder(t(interaction.user.id, "selectPayment"))
-                    .addOptions([
-                        { label: "PayPal", value: "paypal" },
-                        { label: "STC Pay", value: "stc" },
-                        { label: "Barq", value: "barq" },
-                        { label: "Bank Transfer", value: "bank" }
-                    ])
-            );
+      await sendReviewRequest(user, order, product, plan);
 
-            return interaction.reply({
-                content: "اختر وسيلة الدفع:",
-                components: [row],
-                ephemeral: true
-            });
-        }
-
-        // -------------- SELECT PAYMENT --------------
-        if (interaction.customId.startsWith("select_payment")) {
-            const [_, pid, planId] = interaction.customId.split("|");
-            const payment = interaction.values[0];
-
-            const product = data.products[pid];
-            const plan = product.plans.find(p => p.id === planId);
-
-            const invoice = data.invoiceCounter++;
-
-            data.orders[invoice] = {
-                invoice,
-                userId: interaction.user.id,
-                productId: pid,
-                planId,
-                payment,
-                status: "pending",
-                timestamp: Date.now()
-            };
-
-            saveData(data);
-
-            // إرسال الفاتورة بالخاص
-            const embed = new EmbedBuilder()
-                .setTitle(`فاتورة الدفع #${invoice}`)
-                .setColor("#00bfff")
-                .addFields(
-                    { name: "المنتج:", value: product.name },
-                    { name: "الخدمة:", value: plan.name },
-                    { name: "الدفع:", value: payment }
-                )
-                .setFooter({ text: t(interaction.user.id, "sendProof") });
-
-            await interaction.user.send({ embeds: [embed] });
-
-            return interaction.reply({ content: "📨 تم إرسال الفاتورة إلى الخاص", ephemeral: true });
-        }
+      return interaction.update({
+        content: `✅ Order #${invoice} approved and key delivered.`,
+        components: []
+      });
     }
+
+    if (interaction.customId.startsWith("reject|")) {
+      if (interaction.user.id !== OWNER_ID) {
+        return interaction.reply({ content: "❌ Not allowed.", ephemeral: true });
+      }
+
+      const invoice = interaction.customId.split("|")[1];
+      const order = data.orders[invoice];
+      if (!order) {
+        return interaction.reply({
+          content: "❌ Order not found.",
+          ephemeral: true
+        });
+      }
+
+      order.status = "rejected";
+      saveData(data);
+
+      const user = await client.users.fetch(order.userId);
+      await user.send(t(order.userId, "orderRejected"));
+
+      return interaction.update({
+        content: `❌ Order #${invoice} rejected.`,
+        components: []
+      });
+    }
+
+    // ---------- Rate Buttons ----------
+    if (interaction.customId.startsWith("rate|")) {
+      const [_, rating, invoice] = interaction.customId.split("|");
+
+      const modal = new ModalBuilder()
+        .setCustomId(`review_modal|${rating}|${invoice}`)
+        .setTitle("إضافة تقييم / Add Review");
+
+      const txt = new TextInputBuilder()
+        .setCustomId("comment")
+        .setLabel("اكتب تعليقاً (اختياري) / Comment (optional)")
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(false);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(txt));
+
+      return interaction.showModal(modal);
+    }
+  }
+
+  // ---------- Select Menus ----------
+  if (interaction.isStringSelectMenu()) {
+    // select_product
+    if (interaction.customId === "select_product") {
+      const productId = interaction.values[0];
+      const product = data.products[productId];
+      if (!product) {
+        return interaction.reply({
+          content: t(interaction.user.id, "productNotFound"),
+          ephemeral: true
+        });
+      }
+
+      const plans = product.plans || [];
+      if (!plans.length) {
+        return interaction.reply({
+          content: t(interaction.user.id, "noPlans"),
+          ephemeral: true
+        });
+      }
+
+      const options = plans.map((pl) => ({
+        label: `${pl.name} (${pl.price})`,
+        value: `${productId}|${pl.id}`
+      }));
+
+      const row = new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId("select_plan")
+          .setPlaceholder(t(interaction.user.id, "selectPlan"))
+          .addOptions(options)
+      );
+
+      return interaction.reply({
+        content: t(interaction.user.id, "selectPlan"),
+        components: [row],
+        ephemeral: true
+      });
+    }
+
+    // select_plan
+    if (interaction.customId === "select_plan") {
+      const [productId, planId] = interaction.values[0].split("|");
+      const product = data.products[productId];
+      if (!product) {
+        return interaction.reply({
+          content: t(interaction.user.id, "productNotFound"),
+          ephemeral: true
+        });
+      }
+
+      const plan = (product.plans || []).find((p) => p.id === planId);
+      if (!plan) {
+        return interaction.reply({
+          content: t(interaction.user.id, "planNotFound"),
+          ephemeral: true
+        });
+      }
+
+      const row = new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId(`select_payment|${productId}|${planId}`)
+          .setPlaceholder(t(interaction.user.id, "selectPayment"))
+          .addOptions([
+            {
+              label: t(interaction.user.id, "paymentPaypal"),
+              value: "paypal"
+            },
+            {
+              label: t(interaction.user.id, "paymentSTC"),
+              value: "stc"
+            },
+            {
+              label: t(interaction.user.id, "paymentBarq"),
+              value: "barq"
+            },
+            {
+              label: t(interaction.user.id, "paymentBank"),
+              value: "bank"
+            },
+            {
+              label: t(interaction.user.id, "paymentTicket"),
+              value: "ticket"
+            }
+          ])
+      );
+
+      return interaction.reply({
+        content: t(interaction.user.id, "selectPayment"),
+        components: [row],
+        ephemeral: true
+      });
+    }
+
+    // select_payment
+    if (interaction.customId.startsWith("select_payment|")) {
+      const [_, productId, planId] = interaction.customId.split("|");
+      const payment = interaction.values[0];
+
+      const product = data.products[productId];
+      const plan = (product.plans || []).find((p) => p.id === planId);
+
+      if (!product || !plan) {
+        return interaction.reply({
+          content: "❌ Product/Plan not found.",
+          ephemeral: true
+        });
+      }
+
+      const data2 = loadData();
+      const invoice = data2.invoiceCounter++;
+      data2.orders[invoice] = {
+        invoice: invoice,
+        userId: interaction.user.id,
+        productId,
+        planId,
+        payment,
+        status: "pending",
+        timestamp: Date.now()
+      };
+      saveData(data2);
+
+      // DM Invoice
+      const payInfo =
+        payment === "paypal"
+          ? PAYMENT_INFO.paypal
+          : payment === "stc"
+          ? PAYMENT_INFO.stc
+          : payment === "barq"
+          ? PAYMENT_INFO.barq
+          : payment === "bank"
+          ? PAYMENT_INFO.bank
+          : PAYMENT_INFO.ticket;
+
+      const embed = new EmbedBuilder()
+        .setTitle(`${t(interaction.user.id, "invoiceTitle")} #${invoice}`)
+        .setColor(0x28b0f5)
+        .addFields(
+          { name: "Product / المنتج", value: product.name, inline: true },
+          { name: "Plan / المدة", value: plan.name, inline: true },
+          { name: "Price / السعر", value: String(plan.price), inline: true },
+          {
+            name: t(interaction.user.id, "paymentOptionsTitle"),
+            value: `${payment.toUpperCase()}\n${payInfo}`
+          }
+        )
+        .setFooter({ text: t(interaction.user.id, "sendProof") })
+        .setTimestamp();
+
+      try {
+        await interaction.user.send({ embeds: [embed] });
+      } catch (e) {
+        console.error("Failed to DM invoice:", e);
+      }
+
+      return interaction.reply({
+        content: t(interaction.user.id, "invoiceSent"),
+        ephemeral: true
+      });
+    }
+  }
+
+  // ---------- Review Modal ----------
+  if (interaction.isModalSubmit()) {
+    if (interaction.customId.startsWith("review_modal|")) {
+      const [_, ratingStr, invoice] = interaction.customId.split("|");
+      const rating = Number(ratingStr);
+
+      const data3 = loadData();
+      const order = data3.orders[invoice];
+      if (!order) {
+        return interaction.reply({
+          content: "❌ Order not found.",
+          ephemeral: true
+        });
+      }
+
+      const comment =
+        interaction.fields.getTextInputValue("comment") || "No comment";
+
+      const review = {
+        userId: order.userId,
+        productId: order.productId,
+        planId: order.planId,
+        rating,
+        comment,
+        timestamp: Date.now()
+      };
+
+      data3.reviews.push(review);
+      saveData(data3);
+
+      await interaction.reply({
+        content: t(order.userId, "reviewReceived"),
+        ephemeral: true
+      });
+
+      const reviewChannel = await client.channels.fetch(REVIEW_CHANNEL_ID);
+      const product = data3.products[order.productId];
+      const plan =
+        product && (product.plans || []).find((p) => p.id === order.planId);
+
+      const stars = "⭐".repeat(rating);
+
+      const embed = new EmbedBuilder()
+        .setTitle(`${stars} (${rating}/5)`)
+        .setColor(0xffaa00)
+        .addFields(
+          { name: "Client / العميل", value: `<@${order.userId}>` },
+          { name: "Product / المنتج", value: product ? product.name : "-" },
+          { name: "Plan / المدة", value: plan ? plan.name : "-" },
+          { name: "Comment / التعليق", value: comment }
+        )
+        .setTimestamp();
+
+      await reviewChannel.send({ embeds: [embed] });
+    }
+  }
 });
-
 
 // =============================================
 // ============ PAYMENT PROOF (DM) =============
 // =============================================
 
 async function handleDMProof(message) {
-    const data = loadData();
-    const pending = Object.values(data.orders).filter(
-        o => o.userId === message.author.id && o.status === "pending"
-    );
+  const data = loadData();
+  const pending = Object.values(data.orders).filter(
+    (o) => o.userId === message.author.id && o.status === "pending"
+  );
 
-    if (!pending.length) return;
+  if (!pending.length) return;
 
-    const order = pending[pending.length - 1];
+  const order = pending[pending.length - 1];
+  const product = data.products[order.productId];
+  const plan =
+    product && (product.plans || []).find((p) => p.id === order.planId);
 
-    const product = data.products[order.productId];
-    const plan = product.plans.find(p => p.id === order.planId);
+  const owner = await client.users.fetch(OWNER_ID);
 
-    const owner = await client.users.fetch(OWNER_ID);
+  const embed = new EmbedBuilder()
+    .setTitle(t(owner.id, "ownerNewOrderTitle"))
+    .setColor(0xffaa00)
+    .addFields(
+      { name: "Invoice / الفاتورة", value: `#${order.invoice}`, inline: true },
+      {
+        name: "Client / العميل",
+        value: `<@${order.userId}>`,
+        inline: true
+      },
+      {
+        name: "Product / المنتج",
+        value: product ? product.name : "-",
+        inline: true
+      },
+      {
+        name: "Plan / المدة",
+        value: plan ? plan.name : "-",
+        inline: true
+      },
+      {
+        name: "Payment / الدفع",
+        value: order.payment.toUpperCase(),
+        inline: true
+      }
+    )
+    .setDescription(`**Proof / الإثبات:**\n${message.content || "Image"}`)
+    .setTimestamp();
 
-    const embed = new EmbedBuilder()
-        .setTitle("طلب جديد في انتظار الموافقة")
-        .setColor("#ffaa00")
-        .addFields(
-            { name: "الفاتورة", value: `#${order.invoice}` },
-            { name: "العميل", value: `<@${order.userId}>` },
-            { name: "الخدمة", value: `${product.name} - ${plan.name}` },
-            { name: "الدفع", value: order.payment }
-        )
-        .setDescription(`**الإثبات:**\n${message.content || "صورة مرفقة"}`)
-        .setTimestamp();
+  if (message.attachments.size > 0) {
+    embed.setImage(message.attachments.first().url);
+  }
 
-    if (message.attachments.size > 0)
-        embed.setImage(message.attachments.first().url);
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`approve|${order.invoice}`)
+      .setLabel("✅ قبول / Approve")
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId(`reject|${order.invoice}`)
+      .setLabel("❌ رفض / Reject")
+      .setStyle(ButtonStyle.Danger)
+  );
 
-    const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId(`approve|${order.invoice}`)
-            .setLabel("قبول")
-            .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-            .setCustomId(`reject|${order.invoice}`)
-            .setLabel("رفض")
-            .setStyle(ButtonStyle.Danger)
-    );
-
-    await owner.send({ embeds: [embed], components: [row] });
-    await message.reply("⌛ تم استلام الإثبات… بانتظار المراجعة");
-}
-// =============================================
-// ============ APPROVE / REJECT ORDER =========
-// =============================================
-
-client.on("interactionCreate", async (interaction) => {
-    if (!interaction.isButton()) return;
-
-    const data = loadData();
-
-    // -------- APPROVE --------
-    if (interaction.customId.startsWith("approve|")) {
-        if (interaction.user.id !== OWNER_ID)
-            return interaction.reply({ content: "❌ غير مصرح", ephemeral: true });
-
-        const invoice = interaction.customId.split("|")[1];
-        const order = data.orders[invoice];
-
-        if (!order)
-            return interaction.reply({ content: "❌ الطلب غير موجود", ephemeral: true });
-
-        const product = data.products[order.productId];
-        const plan = product.plans.find(p => p.id === order.planId);
-
-        // الحصول على مفتاح متاح
-        const keyObj = plan.keys.find(k => !k.used);
-        if (!keyObj)
-            return interaction.reply({ content: "❌ لا يوجد مفاتيح متاحة!", ephemeral: true });
-
-        keyObj.used = true;
-        order.status = "completed";
-        order.key = keyObj.value;
-
-        saveData(data);
-
-        const user = await client.users.fetch(order.userId);
-
-        await user.send(
-            `${t(order.userId, "orderApproved")}\n\`\`\`${keyObj.value}\`\`\``
-        );
-
-        await sendReviewRequest(user, order, product, plan);
-
-        return interaction.update({
-            content: `✅ تم قبول الطلب #${invoice} وتم تسليم المفتاح`,
-            components: []
-        });
-    }
-
-    // -------- REJECT --------
-    if (interaction.customId.startsWith("reject|")) {
-        if (interaction.user.id !== OWNER_ID)
-            return interaction.reply({ content: "❌ غير مصرح", ephemeral: true });
-
-        const invoice = interaction.customId.split("|")[1];
-        const order = data.orders[invoice];
-
-        if (!order)
-            return interaction.reply({ content: "❌ الطلب غير موجود", ephemeral: true });
-
-        order.status = "rejected";
-        saveData(data);
-
-        const user = await client.users.fetch(order.userId);
-        await user.send(t(order.userId, "orderRejected"));
-
-        return interaction.update({
-            content: `❌ تم رفض الطلب #${invoice}`,
-            components: []
-        });
-    }
-});
-
-
-// =============================================
-// ============ SEND REVIEW REQUEST ============
-// =============================================
-
-async function sendReviewRequest(user, order, product, plan) {
-    const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`rate|1|${order.invoice}`).setLabel("⭐ 1").setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(`rate|2|${order.invoice}`).setLabel("⭐⭐ 2").setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(`rate|3|${order.invoice}`).setLabel("⭐⭐⭐ 3").setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(`rate|4|${order.invoice}`).setLabel("⭐⭐⭐⭐ 4").setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(`rate|5|${order.invoice}`).setLabel("⭐⭐⭐⭐⭐ 5").setStyle(ButtonStyle.Primary)
-    );
-
-    await user.send({
-        content: t(user.id, "rateExperience"),
-        components: [row]
-    });
+  await owner.send({ embeds: [embed], components: [row] });
+  await message.reply(t(message.author.id, "proofReceived"));
 }
 
-
 // =============================================
-// =============== REVIEW MODAL ================
+// =============== EXPRESS / DASH ==============
 // =============================================
 
-client.on("interactionCreate", async (interaction) => {
-    if (!interaction.isButton()) return;
-
-    if (interaction.customId.startsWith("rate|")) {
-        const [_, rating, invoice] = interaction.customId.split("|");
-
-        const modal = new ModalBuilder()
-            .setCustomId(`review_modal|${rating}|${invoice}`)
-            .setTitle("إضافة تقييم");
-
-        const comment = new TextInputBuilder()
-            .setCustomId("comment")
-            .setLabel("اكتب تعليقاً (اختياري)")
-            .setStyle(TextInputStyle.Paragraph)
-            .setRequired(false);
-
-        modal.addComponents(
-            new ActionRowBuilder().addComponents(comment)
-        );
-
-        return interaction.showModal(modal);
-    }
+// صفحة Space Neon بسيطة
+app.get("/", (req, res) => {
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>P9 Shop Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    min-height:100vh;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:radial-gradient(circle at top,#1d2440,#05010a 55%,#000 90%);
+    color:#e5e7eb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .card{
+    background:rgba(15,23,42,0.9);
+    border-radius:24px;
+    padding:28px 32px;
+    box-shadow:0 25px 80px rgba(0,0,0,0.9);
+    border:1px solid rgba(129,140,248,0.4);
+    max-width:420px;
+    width:100%;
+    position:relative;
+    overflow:hidden;
+  }
+  .glow{
+    position:absolute;
+    width:190px;
+    height:190px;
+    border-radius:999px;
+    background:radial-gradient(circle,#6366f1,#ec4899,transparent 70%);
+    opacity:0.45;
+    filter:blur(4px);
+    top:-40px;
+    right:-40px;
+    pointer-events:none;
+  }
+  h1{
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:8px;
+  }
+  p{
+    font-size:13px;
+    color:#9ca3af;
+    margin-bottom:12px;
+  }
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 10px;
+    border-radius:999px;
+    background:rgba(30,64,175,0.7);
+    font-size:11px;
+    margin-bottom:12px;
+  }
+  .status-dot{
+    width:8px;
+    height:8px;
+    border-radius:999px;
+    background:#22c55e;
+    box-shadow:0 0 10px #22c55e;
+  }
+  .meta{
+    font-size:11px;
+    color:#6b7280;
+    margin-top:10px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="glow"></div>
+  <div class="pill"><span class="status-dot"></span><span>Bot & API Online</span></div>
+  <h1>P9 Shop Dashboard</h1>
+  <p>Space Neon panel for P9 Shop bot. The bot, API, and payment system are running on this instance.</p>
+  <p style="font-size:12px">Use Discord commands to manage products, plans and keys:<br/><code>-addproduct</code>, <code>-addplan</code>, <code>-addkey</code>, <code>-stock</code>, <code>-sendshop</code>, <code>-sendlang</code>.</p>
+  <div class="meta">Render / Node.js service · P9 SHOP</div>
+</div>
+</body>
+</html>`);
 });
 
-
-// =============================================
-// ============== SAVE REVIEW ==================
-// =============================================
-
-client.on("interactionCreate", async (interaction) => {
-    if (!interaction.isModalSubmit()) return;
-
-    if (interaction.customId.startsWith("review_modal")) {
-        const [_, rating, invoice] = interaction.customId.split("|");
-
-        const data = loadData();
-        const order = data.orders[invoice];
-        const comment = interaction.fields.getTextInputValue("comment") || "No comment";
-
-        const review = {
-            userId: order.userId,
-            productId: order.productId,
-            planId: order.planId,
-            rating: Number(rating),
-            comment,
-            timestamp: Date.now()
-        };
-
-        data.reviews.push(review);
-        saveData(data);
-
-        // إرسال رد للعميل
-        await interaction.reply({ content: t(order.userId, "reviewReceived"), ephemeral: true });
-
-        // إرسال إلى روم الـ Reviews
-        const channel = await client.channels.fetch(REVIEW_CHANNEL_ID);
-
-        const product = data.products[order.productId];
-        const plan = product.plans.find(p => p.id === order.planId);
-
-        const stars = "⭐".repeat(Number(rating));
-
-        const embed = new EmbedBuilder()
-            .setTitle(`${stars} (${rating}/5)`)
-            .setColor("#ffaa00")
-            .addFields(
-                { name: "العميل", value: `<@${order.userId}>` },
-                { name: "المنتج", value: product.name },
-                { name: "الخدمة", value: plan.name },
-                { name: "التعليق", value: comment }
-            )
-            .setTimestamp();
-
-        await channel.send({ embeds: [embed] });
-    }
-});
-
-
-// =============================================
-// ============== DASHBOARD API ================
-// =============================================
-
-// health
 app.get("/api/health", (req, res) => {
-    res.json({ ok: true });
+  res.json({ ok: true });
 });
-
-// login
-const adminSessions = {};
-
-function createToken() {
-    return crypto.randomBytes(24).toString("hex");
-}
-
-app.post("/api/admin/login", (req, res) => {
-    if (req.body.password !== ADMIN_PASSWORD)
-        return res.status(401).json({ error: "wrong_password" });
-
-    const token = createToken();
-    adminSessions[token] = { created: Date.now() };
-
-    return res.json({ token });
-});
-
-function adminAuth(req, res, next) {
-    const token = (req.headers.authorization || "").replace("Bearer ", "");
-    if (!adminSessions[token]) return res.status(401).json({ error: "unauthorized" });
-    next();
-}
-
-// fetch stats
-app.get("/api/stats", (req, res) => {
-    const data = loadData();
-    const totalProducts = Object.keys(data.products).length;
-    const totalPlans = Object.values(data.products).reduce((acc, p) => acc + p.plans.length, 0);
-    const totalReviews = data.reviews.length;
-    const totalOrders = Object.keys(data.orders).length;
-
-    res.json({ totalProducts, totalPlans, totalOrders, totalReviews });
-});
-
-// fetch products
-app.get("/api/products", adminAuth, (req, res) => {
-    const data = loadData();
-    res.json(data.products);
-});
-
-// fetch orders
-app.get("/api/orders", adminAuth, (req, res) => {
-    const data = loadData();
-    res.json(data.orders);
-});
-
-// fetch reviews
-app.get("/api/reviews", adminAuth, (req, res) => {
-    const data = loadData();
-    res.json(data.reviews);
-});
-
 
 // =============================================
 // ============== START SERVER =================
 // =============================================
 
-app.get("/", (req, res) => {
-    res.send("P9 Shop Dashboard Running ✔");
+app.listen(PORT, () => {
+  console.log(`🌐 HTTP server running on port ${PORT}`);
 });
-
-app.listen(PORT, () =>
-    console.log(`🌐 Dashboard running on port ${PORT}`)
-);
 
 client.login(TOKEN);
