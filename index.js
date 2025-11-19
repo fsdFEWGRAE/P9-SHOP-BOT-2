@@ -1,4 +1,4 @@
-// =============================================
+/ =============================================
 // ===============  P9 SHOP BOT  ===============
 // =============================================
 
@@ -48,20 +48,20 @@ const PORT = process.env.PORT || 3000;
 // بيانات الدفع (عدلها على كيفك)
 const PAYMENT_CONFIG = {
   paypal: {
-    noteAr: "أرسل المبلغ إلى حساب PayPal: your-paypal@example.com",
-    noteEn: "Send the amount to PayPal: your-paypal@example.com"
+    noteAr: "أرسل المبلغ إلى حساب PayPal: 17sutef2@gmail.com",
+    noteEn: "Send the amount to PayPal: 17sutef2@gmail.com"
   },
   stc: {
-    noteAr: "حوّل على STC Pay: 05XXXXXXXX",
-    noteEn: "Send to STC Pay: 05XXXXXXXX"
+    noteAr: "حوّل على STC Pay: Open a ticket to get transfer number",
+    noteEn: "Send to STC Pay: Open a ticket to get transfer number"
   },
   barq: {
-    noteAr: "استخدم Barq على الرقم: 05XXXXXXXX",
-    noteEn: "Use Barq on number: 05XXXXXXXX"
+    noteAr: "استخدم Barq Open a ticket to get transfer number",
+    noteEn: "Use Barq on number: Open a ticket to get transfer number"
   },
   bank: {
-    noteAr: "حساب بنكي: SA00 0000 0000 0000 0000 0000",
-    noteEn: "Bank IBAN: SA00 0000 0000 0000 0000 0000"
+    noteAr: "حساب بنكي: SA1980204507849222121014",
+    noteEn: "Bank IBAN: SA1980204507849222121014"
   }
 };
 
