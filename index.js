@@ -897,9 +897,6 @@ async function sendReviewRequest(user, order, product) {
 }
 
 // ================== EXPRESS DASHBOARD SERVER ==================
-const express = require("express");
-const crypto = require("crypto");
-
 const app = express();
 app.use(express.json());
 
